@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arbor &mdash; Neuron Detail</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/transmitter-tokens.css">
+  <link rel="stylesheet" href="/css/transmitter-shared.css">
+  <link rel="stylesheet" href="/css/neuron.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body class="tm-page">
+  <header class="tm-header">
+    <a href="/index.html" class="tm-header__logo">
+      <img src="/assets/logo/transmitter-logo.svg" alt="The Transmitter" height="24">
+    </a>
+    <nav class="tm-header__nav" aria-label="Primary">
+      <a href="/index.html" class="tm-header__nav-link">Search</a>
+      <a href="/browse.html" class="tm-header__nav-link">Browse</a>
+      <a href="/collection.html" class="tm-header__nav-link">
+        My Collection
+        <span class="tm-header__badge" id="collection-count" hidden></span>
+      </a>
+      <a href="#" class="tm-header__nav-link">Documentation</a>
+      <a href="#" class="tm-header__nav-link">About</a>
+    </nav>
+  </header>
+
+  <div class="breadcrumb">
+    <a href="/index.html">Home</a> &nbsp;/&nbsp; <a href="/browse.html">Browse</a> &nbsp;/&nbsp;
+    <span class="breadcrumb__current" id="breadcrumb-name">&hellip;</span>
+  </div>
+
+  <div id="error-banner" class="status-message status-message--error" role="alert" hidden></div>
+
+  <div class="loading-state" id="loading-state">
+    <div class="spinner"></div>
+    <span>Loading neuron&hellip;</span>
+  </div>
+
+  <div class="tm-neuron-detail" id="neuron-detail" hidden>
+    <div class="tm-neuron-detail__title">
+      <div>
+        <div class="tm-neuron-detail__heading">
+          <h1 id="neuron-title"></h1>
+          <span class="tm-neuron-detail__domain" id="neuron-domain"></span>
+          <span class="cache-badge" id="cache-badge" hidden><span class="cache-badge__dot"></span>Cached</span>
+        </div>
+        <div class="tm-neuron-detail__subtitle" id="neuron-subtitle"></div>
+      </div>
+      <div class="tm-neuron-detail__actions">
+        <button type="button" class="button button--secondary" id="copy-link">Copy link</button>
+        <button type="button" class="button button--secondary" id="collection-toggle"></button>
+      </div>
+    </div>
+
+    <div class="tm-neuron-note" id="neuron-note" hidden></div>
+
+    <div class="tm-neuron-detail__layout">
+      <div class="tm-neuron-viewer-column">
+        <div class="tm-neuron-viewer" id="viewer-container">
+          <div class="tm-neuron-viewer__status" id="viewer-status">Loading morphology&hellip;</div>
+
+          <div class="tm-viewer-toolbar" id="viewer-toolbar" hidden>
+            <button type="button" class="tm-viewer-toolbar__button" id="viewer-reset" title="Reset view" aria-label="Reset view">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8a6 6 0 1 1 1.8 4.3" stroke-linecap="round"/><path d="M2 4v4h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button type="button" class="tm-viewer-toolbar__button" id="viewer-wireframe" title="Toggle soma wireframe" aria-label="Toggle soma wireframe">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 1 L15 5 L15 11 L8 15 L1 11 L1 5 Z M8 1 L8 15 M1 5 L15 11 M15 5 L1 11"/></svg>
+            </button>
+            <button type="button" class="tm-viewer-toolbar__button" id="viewer-fullscreen" title="Fullscreen" aria-label="Fullscreen">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 5V1h4 M11 1h4v4 M15 11v4h-4 M5 15H1v-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="tm-neuron-viewer__legend">
+          <span><i style="background: var(--color-soma)"></i>Soma</span>
+          <span><i style="background: var(--color-dendrite-basal)"></i>Basal dendrites</span>
+          <span><i style="background: var(--color-dendrite-apical)"></i>Apical dendrites</span>
+          <span><i style="background: var(--color-axon)"></i>Axon</span>
+        </div>
+
+        <section class="tm-similar-neurons" id="similar-neurons-section" hidden>
+          <h2 class="tm-similar-neurons__title">Similar Neurons</h2>
+          <div class="tm-similar-neurons__grid" id="similar-neurons-grid"></div>
+        </section>
+      </div>
+
+      <div class="tm-neuron-detail__sidebar">
+        <section class="tm-detail-card">
+          <h2>Download</h2>
+          <a class="button button--primary tm-detail-card__full-width" id="download-swc" download>Standardized SWC (.swc)</a>
+          <a class="tm-detail-card__external-link" id="external-link" target="_blank" rel="noopener">View on NeuroMorpho.Org &rarr;</a>
+        </section>
+
+        <section class="tm-detail-card">
+          <h2>Identification</h2>
+          <dl class="tm-field-list" id="identification-list"></dl>
+        </section>
+
+        <section class="tm-detail-card">
+          <h2>Organism &amp; Strain</h2>
+          <dl class="tm-field-list" id="organism-list"></dl>
+        </section>
+
+        <section class="tm-detail-card">
+          <h2>Anatomical Classification</h2>
+          <dl class="tm-field-list" id="anatomical-list"></dl>
+        </section>
+
+        <section class="tm-detail-card">
+          <h2>Experimental Details</h2>
+          <dl class="tm-field-list" id="experimental-list"></dl>
+        </section>
+
+        <section class="tm-detail-card">
+          <h2>Morphometric Data</h2>
+          <dl class="tm-field-list tm-field-list--mono" id="morphometry-list"></dl>
+        </section>
+
+        <section class="tm-detail-card">
+          <h2>Cite this reconstruction</h2>
+          <blockquote class="tm-citation-block" id="citation-text"></blockquote>
+          <button type="button" class="button button--secondary" id="copy-citation">Copy citation</button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <footer class="tm-footer">
+    <p class="tm-footer__text">Powered by NeuroMorpho.Org, with data from research labs worldwide.</p>
+    <div class="tm-footer__links">
+      <a href="#">Citation Policy</a>
+      <a href="#">Terms of Use</a>
+      <a href="#">Contact Support</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/js/neuron.js"></script>
+</body>
+</html>

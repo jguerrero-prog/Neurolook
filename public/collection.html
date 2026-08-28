@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arbor &mdash; My Collection</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/collection.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__brand">
+      <div class="site-header__brand-text">
+        <span class="site-header__name">Arbor<span class="site-header__name-accent">.</span></span>
+        <span class="site-header__tagline">Neuron Morphology Browser</span>
+      </div>
+    </div>
+    <nav class="site-header__nav" aria-label="Primary">
+      <a href="/index.html" class="site-header__nav-link">Search</a>
+      <a href="/browse.html" class="site-header__nav-link">Browse</a>
+      <a href="/collection.html" class="site-header__nav-link site-header__nav-link--active">
+        My Collection
+        <span class="site-header__badge" id="collection-count" hidden></span>
+      </a>
+    </nav>
+  </header>
+
+  <div class="collection-page">
+    <div class="collection-page__header">
+      <div>
+        <h1>My Collection</h1>
+        <p id="collection-summary" class="collection-page__summary">Loading&hellip;</p>
+      </div>
+      <button type="button" class="button button--secondary" id="export-csv">Export CSV</button>
+    </div>
+
+    <div id="error-banner" class="status-message status-message--error" role="alert" hidden></div>
+    <div class="loading-state" id="loading-state">
+      <div class="spinner"></div>
+      <span>Loading your collection&hellip;</span>
+    </div>
+    <div class="neuron-grid" id="collection-grid"></div>
+    <p class="collection-page__empty" id="empty-message" hidden>
+      Nothing saved yet. Add neurons to your collection from a search result or a neuron's detail page.
+    </p>
+  </div>
+
+  <div class="selection-tray" id="selection-tray" hidden>
+    <span class="selection-tray__label" id="selection-count"></span>
+    <div class="selection-tray__spacer"></div>
+    <button type="button" class="button button--danger" id="remove-selected">Remove from collection</button>
+    <a class="button button--primary" id="compare-link" href="/compare.html">Compare selected</a>
+  </div>
+
+  <script type="module" src="/js/collection.js"></script>
+</body>
+</html>

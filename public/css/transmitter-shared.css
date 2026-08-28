@@ -1,0 +1,366 @@
+/* Transmitter design system — chrome and components shared by every page
+   that opts into the brand redesign (adds .tm-page to <body>). Page-specific
+   layout (hero, filters, browse topbar/sidebar, etc.) stays in that page's
+   own stylesheet. */
+:root {
+  --tm-text-secondary: #475569;
+  --tm-hairline: #e2e8f0;
+}
+
+.tm-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--tm-elm);
+  font-family: var(--font-tm-sans);
+  color: var(--tm-thunder);
+}
+
+/* Header */
+.tm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 64px;
+  background: var(--tm-elm);
+  border-bottom: 0.5px solid var(--tm-hickory);
+}
+
+.tm-header__logo {
+  display: flex;
+  align-items: center;
+}
+
+.tm-header__nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.tm-header__badge {
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: var(--tm-platinum);
+  color: var(--tm-thunder);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tm-header__nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 64px;
+  padding: 0 4px;
+  font-size: 14px;
+  color: var(--tm-thunder);
+  border-bottom: 2px solid transparent;
+}
+
+.tm-header__nav-link--active {
+  font-weight: 500;
+  border-bottom-color: var(--tm-thunder);
+}
+
+/* Search bar pill — the input+button row used both by the Search page's
+   hero form and Browse's topbar. */
+.tm-search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 48px;
+  padding: 16px;
+  background: var(--tm-platinum);
+  border: 1px solid var(--tm-cloud);
+  border-radius: 3px;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Typed state: a real query has been entered, distinct from the empty default. */
+.tm-search-bar:has(.tm-search-bar__input:not(:placeholder-shown)) {
+  background: var(--tm-white);
+  border-color: var(--tm-thunder);
+}
+
+/* Keyboard focus state: a visible ring on the whole pill, since the input
+   itself has its native outline suppressed in favor of this. */
+.tm-search-bar:has(.tm-search-bar__input:focus-visible) {
+  background: var(--tm-white);
+  border-color: var(--tm-thunder);
+  box-shadow: 0 0 0 3px rgba(46, 83, 103, 0.18);
+}
+
+.tm-search-bar__input {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 0 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--font-tm-sans);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--tm-thunder);
+  outline: none;
+}
+
+.tm-search-bar__input::placeholder {
+  color: var(--tm-text-secondary);
+}
+
+.tm-search-form__button {
+  width: 109px;
+  height: 48px;
+  padding: 3px 0 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tm-thunder);
+  color: var(--tm-white);
+  border: none;
+  border-radius: 3px;
+  font-family: var(--font-tm-sans);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: normal;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Filter/dropdown pills — used by Search's filter row and Browse's sort
+   dropdown. Capped narrower than the 720px search bar row on Search so the
+   row of four never grows as wide as the search bar + button above it. */
+.tm-filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tm-filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 150px;
+  padding: 8px 12px;
+  background: var(--tm-platinum);
+  border: 0.5px solid var(--tm-sky);
+  border-radius: 6px;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Custom combobox — replaces native <select> so the open option list can be
+   styled; the native <select> is kept off-screen as the form's real field. */
+.tm-combobox {
+  position: relative;
+}
+
+.tm-combobox__trigger {
+  appearance: none;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Selected state: a real value is chosen (not the placeholder option), so
+   the pill reads as "active" rather than "still needs a value". */
+.tm-combobox--selected > .tm-combobox__trigger {
+  background: var(--tm-white);
+  border-color: var(--tm-thunder);
+}
+
+/* Open state: mouse-opened dropdowns still get a border cue even though
+   they don't trigger the focus-visible ring below. */
+.tm-combobox--open > .tm-combobox__trigger {
+  border-color: var(--tm-thunder);
+}
+
+/* Keyboard focus state — :focus-visible so a mouse click doesn't also
+   trigger the ring; only keyboard/programmatic focus does. */
+.tm-combobox__trigger:focus-visible {
+  outline: none;
+  border-color: var(--tm-thunder);
+  box-shadow: 0 0 0 3px rgba(46, 83, 103, 0.18);
+}
+
+.tm-combobox__value {
+  flex: 1;
+  min-width: 0;
+  padding: 0 14px 0 0;
+  font-family: var(--font-tm-sans);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--tm-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tm-combobox--selected .tm-combobox__value {
+  color: var(--tm-thunder);
+}
+
+.tm-combobox__native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
+}
+
+.tm-combobox__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 100%;
+  width: max-content;
+  max-width: 260px;
+  max-height: 320px;
+  margin: 0;
+  padding: 8px;
+  background: var(--tm-white);
+  border: 0.5px solid var(--tm-sky);
+  border-radius: 3px;
+  box-shadow: 0 8px 24px rgba(46, 83, 103, 0.14);
+}
+
+.tm-combobox__panel[hidden] {
+  display: none;
+}
+
+.tm-combobox__search {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 6px 10px;
+  margin: 0;
+  border: 1px solid var(--tm-cloud);
+  border-radius: 6px;
+  background: var(--tm-platinum);
+  font-family: var(--font-tm-sans);
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--tm-thunder);
+  outline: none;
+}
+
+.tm-combobox__search:focus-visible {
+  border-color: var(--tm-thunder);
+  box-shadow: 0 0 0 3px rgba(46, 83, 103, 0.18);
+}
+
+.tm-combobox__search::placeholder {
+  color: var(--tm-text-secondary);
+}
+
+.tm-combobox__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.tm-combobox__option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: var(--font-tm-sans);
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: var(--tm-thunder);
+  cursor: pointer;
+}
+
+.tm-combobox__option--active {
+  background: var(--tm-platinum);
+}
+
+.tm-combobox__option-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tm-combobox__empty {
+  padding: 8px 12px;
+  font-family: var(--font-tm-sans);
+  font-size: 12px;
+  color: var(--tm-text-secondary);
+}
+
+.tm-combobox__check {
+  flex-shrink: 0;
+  width: 11px;
+  height: auto;
+  visibility: hidden;
+}
+
+.tm-combobox__option--selected .tm-combobox__check {
+  visibility: visible;
+}
+
+.tm-filter__chevron {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  width: 4px;
+  height: 7px;
+  transform: translateY(-50%) rotate(90deg);
+  pointer-events: none;
+  transition: transform 0.15s ease;
+}
+
+.tm-combobox--open .tm-filter__chevron {
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+/* Footer */
+.tm-footer {
+  background: var(--tm-maple);
+  border-top: 0.5px solid var(--tm-maple);
+  padding: 24px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-tm-sans);
+  font-size: 13px;
+  color: var(--tm-thunder);
+}
+
+.tm-footer__text {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.tm-footer__links {
+  display: flex;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.tm-footer__links a {
+  color: var(--tm-thunder);
+  text-decoration: underline;
+}

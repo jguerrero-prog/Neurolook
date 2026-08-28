@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arbor &mdash; Browse</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/transmitter-tokens.css">
+  <link rel="stylesheet" href="/css/transmitter-shared.css">
+  <link rel="stylesheet" href="/css/browse.css">
+</head>
+<body class="tm-page">
+  <header class="tm-header">
+    <a href="/index.html" class="tm-header__logo">
+      <img src="/assets/logo/transmitter-logo.svg" alt="The Transmitter" height="24">
+    </a>
+    <nav class="tm-header__nav" aria-label="Primary">
+      <a href="/index.html" class="tm-header__nav-link">Search</a>
+      <a href="/browse.html" class="tm-header__nav-link tm-header__nav-link--active">Browse</a>
+      <a href="/collection.html" class="tm-header__nav-link">
+        My Collection
+        <span class="tm-header__badge" id="collection-count" hidden></span>
+      </a>
+      <a href="#" class="tm-header__nav-link">Documentation</a>
+      <a href="#" class="tm-header__nav-link">About</a>
+    </nav>
+  </header>
+
+  <form id="browse-form" method="get" action="/browse.html">
+    <div class="tm-browse-topbar">
+      <label for="browse-name-input" class="sr-only">Search by neuron name</label>
+      <div class="tm-search-bar tm-browse-topbar__bar">
+        <img src="/assets/icons/search.svg" alt="" width="18" height="18">
+        <input id="browse-name-input" name="name" type="text" class="tm-search-bar__input" placeholder="Search by neuron name or ID&hellip;">
+      </div>
+      <button type="submit" class="tm-search-form__button">Search</button>
+      <span class="tm-browse-topbar__count" id="result-count" aria-live="polite"></span>
+
+      <div class="tm-combobox" data-combobox="sort">
+        <button type="button" class="tm-filter tm-combobox__trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="tm-combobox__value">Sort: Relevance</span>
+          <img class="tm-filter__chevron" src="/assets/icons/chevron.svg" alt="" width="5" height="9">
+        </button>
+        <div class="tm-combobox__panel" hidden>
+          <input type="text" class="tm-combobox__search" placeholder="Search sort options…" aria-label="Search sort options" autocomplete="off">
+          <ul class="tm-combobox__list" role="listbox" aria-label="Sort by"></ul>
+        </div>
+        <select name="sort" class="tm-combobox__native" data-filter="sort" tabindex="-1" aria-hidden="true">
+          <option value="">Sort: Relevance</option>
+          <option value="neuron_name,asc">Name (A&ndash;Z)</option>
+          <option value="neuron_name,desc">Name (Z&ndash;A)</option>
+          <option value="upload_date,desc">Newest first</option>
+          <option value="upload_date,asc">Oldest first</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tm-browse-layout">
+      <aside class="tm-browse-sidebar" aria-label="Refine results">
+        <div class="tm-browse-sidebar__header">
+          <span>Refine results</span>
+          <a href="/browse.html">Clear all</a>
+        </div>
+        <fieldset class="tm-facet" id="facet-species">
+          <legend class="tm-facet__label">Species</legend>
+          <div class="tm-multiselect" data-multiselect="species">
+            <button type="button" class="tm-filter tm-multiselect__trigger tm-combobox__trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span class="tm-combobox__value">Search species</span>
+              <img class="tm-multiselect__chevron" src="/assets/icons/multiselect-chevron.svg" alt="" width="14" height="8">
+            </button>
+            <div class="tm-combobox__panel" hidden>
+              <input type="text" class="tm-combobox__search" placeholder="Search species…" aria-label="Search species" autocomplete="off">
+              <ul class="tm-combobox__list" role="listbox" aria-multiselectable="true" aria-label="Species"></ul>
+            </div>
+            <div class="tm-multiselect__native" hidden></div>
+            <div class="tm-multiselect__pills"></div>
+          </div>
+        </fieldset>
+        <fieldset class="tm-facet" id="facet-brain_region">
+          <legend class="tm-facet__label">Brain Region</legend>
+          <div class="tm-multiselect" data-multiselect="brain_region">
+            <button type="button" class="tm-filter tm-multiselect__trigger tm-combobox__trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span class="tm-combobox__value">Search brain region</span>
+              <img class="tm-multiselect__chevron" src="/assets/icons/multiselect-chevron.svg" alt="" width="14" height="8">
+            </button>
+            <div class="tm-combobox__panel" hidden>
+              <input type="text" class="tm-combobox__search" placeholder="Search brain region…" aria-label="Search brain region" autocomplete="off">
+              <ul class="tm-combobox__list" role="listbox" aria-multiselectable="true" aria-label="Brain region"></ul>
+            </div>
+            <div class="tm-multiselect__native" hidden></div>
+            <div class="tm-multiselect__pills"></div>
+          </div>
+        </fieldset>
+        <fieldset class="tm-facet" id="facet-cell_type">
+          <legend class="tm-facet__label">Cell Type</legend>
+          <div class="tm-multiselect" data-multiselect="cell_type">
+            <button type="button" class="tm-filter tm-multiselect__trigger tm-combobox__trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span class="tm-combobox__value">Search cell type</span>
+              <img class="tm-multiselect__chevron" src="/assets/icons/multiselect-chevron.svg" alt="" width="14" height="8">
+            </button>
+            <div class="tm-combobox__panel" hidden>
+              <input type="text" class="tm-combobox__search" placeholder="Search cell type…" aria-label="Search cell type" autocomplete="off">
+              <ul class="tm-combobox__list" role="listbox" aria-multiselectable="true" aria-label="Cell type"></ul>
+            </div>
+            <div class="tm-multiselect__native" hidden></div>
+            <div class="tm-multiselect__pills"></div>
+          </div>
+        </fieldset>
+        <fieldset class="tm-facet" id="facet-archive">
+          <legend class="tm-facet__label">Archive</legend>
+          <div class="tm-multiselect" data-multiselect="archive">
+            <button type="button" class="tm-filter tm-multiselect__trigger tm-combobox__trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span class="tm-combobox__value">Search archive</span>
+              <img class="tm-multiselect__chevron" src="/assets/icons/multiselect-chevron.svg" alt="" width="14" height="8">
+            </button>
+            <div class="tm-combobox__panel" hidden>
+              <input type="text" class="tm-combobox__search" placeholder="Search archive…" aria-label="Search archive" autocomplete="off">
+              <ul class="tm-combobox__list" role="listbox" aria-multiselectable="true" aria-label="Archive"></ul>
+            </div>
+            <div class="tm-multiselect__native" hidden></div>
+            <div class="tm-multiselect__pills"></div>
+          </div>
+        </fieldset>
+      </aside>
+
+      <main class="tm-browse-results">
+        <div id="error-banner" class="status-message status-message--error" role="alert" hidden></div>
+        <div class="tm-view-toggle" id="view-toggle" role="group" aria-label="Results view" hidden>
+          <button type="button" class="tm-view-toggle__button" data-view="grid" aria-pressed="false">Grid</button>
+          <button type="button" class="tm-view-toggle__button" data-view="list" aria-pressed="false">List</button>
+        </div>
+        <div class="loading-state" id="loading-state">
+          <div class="spinner"></div>
+          <span>Searching NeuroMorpho.Org&hellip;</span>
+        </div>
+        <div class="no-results" id="no-results-message" hidden>
+          <p class="no-results__title">No neurons match these filters</p>
+          <p class="no-results__hint">Try removing a filter or broadening your search.</p>
+        </div>
+        <div class="tm-browse-welcome" id="browse-welcome" hidden>
+          <p class="tm-browse-welcome__title">Start browsing</p>
+          <p class="tm-browse-welcome__hint">Search by name above, or choose a species, brain region, cell type, or archive from the sidebar.</p>
+        </div>
+        <div class="neuron-grid" id="results-grid"></div>
+        <nav class="pagination" id="pagination" aria-label="Search results pages"></nav>
+      </main>
+    </div>
+  </form>
+
+  <div class="selection-tray" id="selection-tray" hidden>
+    <span class="selection-tray__label" id="selection-count"></span>
+    <div class="selection-tray__spacer"></div>
+    <button type="button" class="button button--secondary" id="clear-selection">Clear selection</button>
+    <a class="button button--primary" id="compare-link" href="/compare.html">Compare selected</a>
+  </div>
+
+  <footer class="tm-footer">
+    <p class="tm-footer__text">Powered by NeuroMorpho.Org, with data from research labs worldwide.</p>
+    <div class="tm-footer__links">
+      <a href="#">Citation Policy</a>
+      <a href="#">Terms of Use</a>
+      <a href="#">Contact Support</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/js/browse.js"></script>
+</body>
+</html>

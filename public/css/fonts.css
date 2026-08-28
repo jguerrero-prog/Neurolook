@@ -1,0 +1,18 @@
+/* Local variable fonts for the Transmitter-brand redesign (Search page only). */
+@font-face {
+  font-family: 'Gothia Sans VF';
+  src: url('/fonts/GothiaSansVF-Regular.woff2') format('woff2'),
+       url('/fonts/GothiaSansVF-Regular.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Gothia Serif Text';
+  src: url('/fonts/GothiaSerifVF-Regular.woff2') format('woff2'),
+       url('/fonts/GothiaSerifVF-Regular.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}

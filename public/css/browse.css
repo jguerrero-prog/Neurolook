@@ -1,0 +1,410 @@
+/* Re-themes the shared components from base.css/tokens.css (buttons, neuron
+   cards, pagination, status messages, etc.) to the Transmitter palette by
+   overriding the custom properties they read — only inside .tm-page, so
+   Collection/Neuron/Compare (which don't carry that class yet) are
+   untouched. Browse-specific layout (topbar, sidebar, facets) follows below. */
+.tm-page {
+  --font-sans: var(--font-tm-sans);
+  --font-mono: var(--font-tm-mono);
+  --color-bg: var(--tm-elm);
+  --color-surface: var(--tm-white);
+  --color-surface-alt: var(--tm-platinum);
+  --color-border: var(--tm-cloud);
+  --color-border-strong: var(--tm-sky);
+  --color-text: var(--tm-thunder);
+  --color-text-secondary: var(--tm-text-secondary);
+  --color-text-tertiary: var(--tm-storm);
+  --color-accent: var(--tm-cardinal);
+  --color-accent-hover: var(--tm-rosewood);
+  --color-accent-tint: var(--tm-azalea);
+  --color-accent-tint-strong: var(--tm-primrose);
+}
+
+#browse-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.tm-browse-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 40px;
+  border-bottom: 0.5px solid var(--tm-hickory);
+}
+
+.tm-browse-topbar__bar {
+  flex: 0 1 320px;
+  height: 40px;
+  padding: 0 14px;
+}
+
+.tm-browse-topbar .tm-search-form__button {
+  height: 40px;
+}
+
+.tm-browse-topbar__count {
+  flex: 1;
+  font-family: var(--font-tm-mono);
+  font-size: 13px;
+  color: var(--tm-text-secondary);
+  text-align: right;
+}
+
+.tm-browse-layout {
+  display: flex;
+  flex: 1;
+}
+
+.tm-browse-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  padding: 24px;
+  overflow-x: hidden;
+}
+
+.tm-browse-sidebar__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tm-thunder);
+}
+
+.tm-browse-sidebar__header a {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tm-cardinal);
+}
+
+.tm-facet {
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+  border: none;
+}
+
+.tm-facet + .tm-facet {
+  margin-top: 18px;
+}
+
+.tm-facet__label {
+  display: block;
+  font-family: var(--font-tm-sans);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--tm-thunder);
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+/* Facet multi-select — a dropdown + search instead of an always-open,
+   scrolling checkbox list, since a checked box could otherwise scroll out
+   of view with nothing else showing it was picked. Selections show up as
+   removable pills below the trigger instead. */
+.tm-multiselect {
+  position: relative;
+}
+
+.tm-multiselect__trigger {
+  width: 100%;
+  max-width: none;
+  height: 36px;
+  padding: 8px 12px 8px 16px;
+  border-width: 1.5px;
+  border-radius: 4px;
+}
+
+.tm-multiselect .tm-combobox__value {
+  font-size: 14px;
+  text-transform: none;
+}
+
+.tm-multiselect__chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 11px;
+  height: 6px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: transform 0.15s ease;
+}
+
+.tm-multiselect.tm-combobox--open .tm-multiselect__chevron {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.tm-multiselect__native {
+  display: none;
+}
+
+.tm-multiselect__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tm-multiselect__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  background: var(--tm-thunder);
+  color: var(--tm-white);
+  font-family: var(--font-tm-sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.tm-multiselect__checkbox {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
+.tm-multiselect__option-count {
+  font-family: var(--font-tm-mono);
+  font-size: 11px;
+  color: var(--tm-storm);
+  flex-shrink: 0;
+}
+
+.tm-browse-results {
+  flex: 1;
+  padding: 22px 32px 32px;
+}
+
+/* Give the morphology preview more room than base.css's shared card default
+   (110px) — scoped to .tm-page so Collection's cards are unaffected. */
+.tm-page .neuron-card__thumb {
+  height: 200px;
+}
+
+.tm-page .neuron-card--selected {
+  border-color: var(--tm-cloud);
+  background: var(--tm-platinum);
+}
+
+/* Pinned to the viewport, not the end of the document flow — otherwise a
+   tall results grid pushes it below the fold until you scroll to it. */
+.tm-page .selection-tray {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  background: var(--tm-midnight);
+}
+
+.tm-page .selection-tray__label {
+  font-family: var(--font-tm-serif);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--tm-elm);
+}
+
+.tm-page .button--primary {
+  background: var(--tm-white);
+  color: var(--tm-lily);
+}
+
+.tm-page .button--secondary {
+  background: transparent;
+  border-color: var(--tm-sky);
+  color: var(--tm-elm);
+}
+
+.tm-page .selection-tray .button {
+  border-radius: 3px;
+}
+
+.tm-view-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 16px;
+  background: var(--tm-platinum);
+  border: 0.5px solid var(--tm-sky);
+  border-radius: 6px;
+}
+
+.tm-view-toggle[hidden] {
+  display: none;
+}
+
+.tm-view-toggle__button {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  font-family: var(--font-tm-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--tm-text-secondary);
+  cursor: pointer;
+}
+
+.tm-view-toggle__button--active {
+  background: var(--tm-white);
+  color: var(--tm-thunder);
+  box-shadow: 0 1px 2px rgba(46, 83, 103, 0.12);
+}
+
+.neuron-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+/* List view — a compact row per neuron instead of a card grid. Built with
+   CSS Grid so neuronCard.js's markup (shared with Collection) needs no
+   changes: each element is just placed into a cell of the row. */
+.neuron-grid--list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.neuron-grid--list .neuron-card {
+  display: grid;
+  grid-template-columns: 70px 64px 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 2px;
+  padding: 10px 16px;
+}
+
+.neuron-grid--list .neuron-card__header {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.neuron-grid--list .neuron-card__id {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.neuron-grid--list .neuron-card__select {
+  flex-shrink: 0;
+}
+
+.neuron-grid--list .neuron-card__thumb {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 64px;
+  height: 64px;
+  padding: 6px;
+}
+
+.neuron-grid--list .neuron-card__title {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.neuron-grid--list .neuron-card__meta {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+.neuron-grid--list .neuron-card__footer {
+  grid-column: 4;
+  grid-row: 1 / span 2;
+}
+
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  padding: 90px 24px;
+}
+
+.no-results[hidden] {
+  display: none;
+}
+
+.no-results__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--tm-thunder);
+}
+
+.no-results__hint {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--tm-text-secondary);
+}
+
+.tm-browse-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  padding: 90px 24px;
+}
+
+.tm-browse-welcome[hidden] {
+  display: none;
+}
+
+.tm-browse-welcome__title {
+  margin: 0;
+  font-family: var(--font-tm-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--tm-cardinal);
+}
+
+.tm-browse-welcome__hint {
+  margin: 0;
+  max-width: 420px;
+  font-size: 13.5px;
+  color: var(--tm-text-secondary);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 32px;
+  font-family: var(--font-tm-mono);
+  font-size: 13px;
+}
+
+.pagination a,
+.pagination span {
+  min-width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: var(--tm-thunder);
+}
+
+.pagination a.pagination__current {
+  background: var(--tm-cardinal);
+  color: var(--tm-white);
+}

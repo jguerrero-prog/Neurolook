@@ -1,0 +1,13 @@
+{
+  "name": "arbor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first browser for NeuroMorpho.Org's neuron morphology library.",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,249 @@
+.neuron-detail {
+  padding: 22px 40px 40px;
+}
+
+.neuron-detail__title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.neuron-detail__heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.neuron-detail__heading h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.neuron-detail__domain {
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--color-success-tint);
+  color: var(--color-success-text);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.neuron-detail__subtitle {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-top: 6px;
+}
+
+.neuron-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.neuron-note {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  background: var(--color-surface-alt);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.neuron-note[hidden] {
+  display: none;
+}
+
+.neuron-detail__layout {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.neuron-viewer-column {
+  flex: 1;
+  min-width: 0;
+}
+
+.neuron-viewer {
+  position: relative;
+  height: 560px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-viewer-bg);
+}
+
+.neuron-viewer canvas {
+  display: block;
+}
+
+.viewer-toolbar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 6px;
+  background: oklch(100% 0 0 / 0.92);
+  padding: 6px;
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.viewer-toolbar[hidden] {
+  display: none;
+}
+
+.neuron-viewer:hover .viewer-toolbar,
+.viewer-toolbar:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.viewer-toolbar__button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.viewer-toolbar__button:hover {
+  background: var(--color-surface-alt);
+}
+
+.viewer-toolbar__button--active {
+  background: var(--color-accent-tint);
+  color: var(--color-accent);
+}
+
+.neuron-viewer__status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--color-viewer-text);
+}
+
+.neuron-viewer__legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+}
+
+.neuron-viewer__legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.neuron-viewer__legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.neuron-detail__sidebar {
+  width: 380px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.detail-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  background: var(--color-surface);
+}
+
+.detail-card h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.detail-card__full-width {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.detail-card__external-link {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.field-list {
+  margin: 0;
+}
+
+.field-list div {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid oklch(94% 0.004 250);
+  font-size: 13px;
+}
+
+.field-list div:last-child {
+  border-bottom: none;
+}
+
+.field-list dt {
+  color: var(--color-text-secondary);
+}
+
+.field-list dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+}
+
+.field-list--mono dd {
+  font-family: var(--font-mono);
+}
+
+.similar-neurons {
+  margin-top: 24px;
+}
+
+.similar-neurons__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.similar-neurons__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.citation-block {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  background: var(--color-surface-alt);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 4px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--color-text);
+}

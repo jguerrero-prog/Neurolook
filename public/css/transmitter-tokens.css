@@ -1,0 +1,54 @@
+/* The Transmitter design system — full brand palette, pulled from Figma
+   (Colors + Backgrounds foundation frames). Not yet applied app-wide: only
+   the Search page (search.css) consumes these so far. Kept as its own file
+   so any future page redesign can link it without duplicating values. */
+:root {
+  /* Primary */
+  --tm-cardinal: #910e1c;
+  --tm-midnight: #003049;
+  --tm-elm: #fef9ee;
+
+  /* Secondary */
+  --tm-rosewood: #610910;
+  --tm-lily: #d14d57;
+  --tm-coral: #e0888f;
+  --tm-primrose: #efc4c7;
+  --tm-azalea: #fff2f3;
+  --tm-thunder: #2e5367;
+  --tm-storm: #7f97a4;
+  --tm-sky: #bfcbd1;
+  --tm-cloud: #dfe8ec;
+  --tm-ash: #585248;
+  --tm-driftwood: #7f786b;
+  --tm-maple: #f7f0e3;
+  --tm-poplar: #fffdf9;
+  --tm-hickory: #beb4a0;
+
+  /* Greyscale */
+  --tm-black: #000000;
+  --tm-graphite: #2d2d2d;
+  --tm-slate: #83898d;
+  --tm-moonstone: #e2e4e5;
+  --tm-platinum: #f4f5f6;
+  --tm-white: #ffffff;
+
+  /* UI Specific */
+  --tm-ui-blue: #0b6bc3;
+
+  --font-tm-sans: 'Gothia Sans VF', system-ui, sans-serif;
+  --font-tm-serif: 'Gothia Serif Text', Georgia, serif;
+  --font-tm-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/*
+  Documented background + stroke pairings (a background color is only ever
+  paired with its listed stroke — the stroke is only drawn when the
+  background isn't already bounded by another element):
+
+  --tm-elm       bg  +  --tm-hickory   stroke @ 0.5px
+  --tm-azalea    bg  +  --tm-primrose  stroke @ 0.5px
+  --tm-cloud     bg  +  --tm-sky       stroke @ 0.5px
+  --tm-platinum  bg  +  --tm-sky       stroke @ 0.5px
+  --tm-midnight  bg  +  --tm-thunder   stroke @ 0.5px
+  --tm-graphite  bg  +  --tm-ash       stroke @ 0.5px
+*/

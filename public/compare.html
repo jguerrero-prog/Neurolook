@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arbor &mdash; Compare</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/compare.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__brand">
+      <div class="site-header__brand-text">
+        <span class="site-header__name">Arbor<span class="site-header__name-accent">.</span></span>
+        <span class="site-header__tagline">Neuron Morphology Browser</span>
+      </div>
+    </div>
+    <nav class="site-header__nav" aria-label="Primary">
+      <a href="/index.html" class="site-header__nav-link">Search</a>
+      <a href="/browse.html" class="site-header__nav-link site-header__nav-link--active">Browse</a>
+      <a href="/collection.html" class="site-header__nav-link">
+        My Collection
+        <span class="site-header__badge" id="collection-count" hidden></span>
+      </a>
+    </nav>
+  </header>
+
+  <div class="breadcrumb">
+    <a href="/index.html">Home</a> &nbsp;/&nbsp; <a href="/browse.html">Browse</a> &nbsp;/&nbsp;
+    <span class="breadcrumb__current">Compare</span>
+  </div>
+
+  <div id="error-banner" class="status-message status-message--error" role="alert" hidden></div>
+
+  <div class="loading-state" id="loading-state">
+    <div class="spinner"></div>
+    <span>Loading comparison&hellip;</span>
+  </div>
+
+  <div class="compare-page" id="compare-page" hidden>
+    <div class="compare-page__title">
+      <h1 id="compare-heading"></h1>
+      <a href="/browse.html">&larr; Back to browse</a>
+    </div>
+
+    <div class="compare-viewers" id="compare-viewers"></div>
+
+    <section class="compare-table-section">
+      <h2>Organism &amp; Strain</h2>
+      <div class="compare-table" id="organism-table"></div>
+    </section>
+
+    <section class="compare-table-section">
+      <h2>Anatomical Classification</h2>
+      <div class="compare-table" id="anatomical-table"></div>
+    </section>
+
+    <section class="compare-table-section">
+      <h2>Experimental Details</h2>
+      <div class="compare-table" id="experimental-table"></div>
+    </section>
+
+    <section class="compare-table-section">
+      <h2>Morphometric Data</h2>
+      <div class="compare-table" id="morphometry-table"></div>
+    </section>
+  </div>
+
+  <script type="module" src="/js/compare.js"></script>
+</body>
+</html>
