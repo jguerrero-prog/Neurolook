@@ -23,6 +23,11 @@ const SOMA_TYPE = 1;
 export class NeuronViewer {
   constructor(container) {
     this.container = container;
+    this.wireframeOn = false;
+    // Set by the caller to sync a toolbar button's visual state, since
+    // wireframe can also be toggled here via the keyboard shortcut.
+    this.onWireframeChange = null;
+
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x000000);
 
@@ -38,8 +43,34 @@ export class NeuronViewer {
     this.resizeObserver.observe(container);
     this.handleResize();
 
+    this.bindKeyboardShortcuts();
+
     this.animate = this.animate.bind(this);
     this.animate();
+  }
+
+  // R/W/F for reset/wireframe/fullscreen — only fires while this specific
+  // viewer has focus, so multiple viewers on the Compare page don't fight
+  // over the same keys. Interacting with the canvas (drag/click) focuses it.
+  bindKeyboardShortcuts() {
+    this.container.tabIndex = 0;
+    this.container.addEventListener('pointerdown', () => this.container.focus());
+    this.container.addEventListener('keydown', (event) => {
+      switch (event.key.toLowerCase()) {
+        case 'r':
+          this.resetView();
+          break;
+        case 'w':
+          this.toggleWireframe();
+          break;
+        case 'f':
+          this.toggleFullscreen();
+          break;
+        default:
+          return;
+      }
+      event.preventDefault();
+    });
   }
 
   handleResize() {
@@ -120,7 +151,13 @@ export class NeuronViewer {
   // Wireframe only has a visible effect on the soma mesh — the branches are
   // already rendered as line segments, not solid geometry.
   setWireframe(enabled) {
+    this.wireframeOn = enabled;
     if (this.somaMesh) this.somaMesh.material.wireframe = enabled;
+    if (this.onWireframeChange) this.onWireframeChange(enabled);
+  }
+
+  toggleWireframe() {
+    this.setWireframe(!this.wireframeOn);
   }
 
   toggleFullscreen() {

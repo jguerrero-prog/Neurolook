@@ -4,7 +4,7 @@ import { escapeHtml } from './dom.js';
 import { NeuronViewer } from './viewer.js';
 import { createNeuronCard } from './neuronCard.js';
 import { recordVisit } from './recentlyViewed.js';
-import { getSelection, toggleSelection, clearSelection } from './compareSelection.js';
+import { ensureScope, getSelection, toggleSelection, clearSelection } from './compareSelection.js';
 import { buildCompareUrl } from './routes.js';
 import { buildCitationLines } from './logic/citation.js';
 import {
@@ -44,7 +44,7 @@ function renderNote(neuron) {
 }
 
 function renderHeader(neuron) {
-  document.title = `Arbor — ${neuron.name}`;
+  document.title = `Neurolook — ${neuron.name}`;
   document.getElementById('breadcrumb-name').textContent = neuron.name;
   document.getElementById('neuron-title').textContent = `${neuron.name} — ${neuron.cellType || 'Neuron'}`;
   document.getElementById('neuron-subtitle').textContent = neuron.subtitle;
@@ -144,15 +144,14 @@ function bindViewerToolbar(viewer) {
   const fullscreenButton = document.getElementById('viewer-fullscreen');
 
   resetButton.addEventListener('click', () => viewer.resetView());
-
-  let wireframeOn = false;
-  wireframeButton.addEventListener('click', () => {
-    wireframeOn = !wireframeOn;
-    viewer.setWireframe(wireframeOn);
-    wireframeButton.classList.toggle('tm-viewer-toolbar__button--active', wireframeOn);
-  });
-
+  wireframeButton.addEventListener('click', () => viewer.toggleWireframe());
   fullscreenButton.addEventListener('click', () => viewer.toggleFullscreen());
+
+  // Keeps the button's active state in sync even when wireframe is toggled
+  // via the keyboard shortcut instead of this button.
+  viewer.onWireframeChange = (enabled) => {
+    wireframeButton.classList.toggle('tm-viewer-toolbar__button--active', enabled);
+  };
 
   document.getElementById('viewer-toolbar').hidden = false;
 }
@@ -165,14 +164,15 @@ function otherSelectedNames(neuron) {
   return getSelection().filter((name) => name !== neuron.name);
 }
 
+// Comparing needs at least 2 total (the current neuron plus at least one
+// other), so the tray only ever appears once that's true — nothing to guard
+// against a 1-selected state reaching Compare's error page.
 function updateSelectionTray(neuron) {
   const others = otherSelectedNames(neuron);
-  const compareLink = document.getElementById('compare-link');
 
   document.getElementById('selection-tray').hidden = others.length === 0;
-  document.getElementById('selection-count').textContent = `${others.length} selected`;
-  compareLink.href = others.length > 0 ? buildCompareUrl([neuron.name, ...others]) : '/browse.html';
-  compareLink.title = others.length > 0 ? '' : 'Select at least one more neuron to compare';
+  document.getElementById('selection-count').textContent = `${others.length} Neurons Selected`;
+  document.getElementById('compare-link').href = buildCompareUrl([neuron.name, ...others]);
 }
 
 function handleSimilarCardToggle(neuron, similarNeuronName) {
@@ -229,6 +229,7 @@ async function init() {
     showError('No neuron specified.');
     return;
   }
+  ensureScope(`neuron:${requestedNeuronName}`);
 
   try {
     const { neuron, morphometry, literature } = await api.getNeuron(requestedNeuronName);

@@ -1,4 +1,4 @@
-# Arbor
+# Neurolook
 
 A local-first tool for browsing NeuroMorpho.Org's library of digitally reconstructed neuron and glia morphologies.
 

@@ -34,6 +34,10 @@
   border-bottom: 0.5px solid var(--tm-hickory);
 }
 
+.tm-browse-topbar__sort {
+  margin-left: auto;
+}
+
 .tm-browse-topbar__bar {
   flex: 0 1 320px;
   height: 40px;
@@ -44,12 +48,20 @@
   height: 40px;
 }
 
-.tm-browse-topbar__count {
-  flex: 1;
+.tm-browse-results__toolbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* margin-left: auto (not justify-content: space-between on the toolbar) so
+   this stays pinned to the right even when the view toggle is hidden
+   (no results) instead of jumping to the left. */
+.tm-browse-results__count {
+  margin-left: auto;
   font-family: var(--font-tm-mono);
   font-size: 13px;
   color: var(--tm-text-secondary);
-  text-align: right;
 }
 
 .tm-browse-layout {
@@ -103,8 +115,7 @@
   font-family: var(--font-tm-sans);
   font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
+  text-transform: none;
   color: var(--tm-thunder);
   margin-bottom: 8px;
   padding: 0;
@@ -243,7 +254,6 @@
   display: inline-flex;
   gap: 4px;
   padding: 4px;
-  margin-bottom: 16px;
   background: var(--tm-platinum);
   border: 0.5px solid var(--tm-sky);
   border-radius: 6px;
@@ -275,6 +285,15 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
+  transition: opacity 0.15s ease;
+}
+
+/* Shown on the existing cards while a re-search (filter change,
+   pagination) is in flight, instead of the tall loading-state spinner
+   shoving them down — see runSearch() in browse.js. */
+.neuron-grid--loading {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 /* List view — a compact row per neuron instead of a card grid. Built with
@@ -365,32 +384,22 @@
   color: var(--tm-text-secondary);
 }
 
-.tm-browse-welcome {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  text-align: center;
-  padding: 90px 24px;
-}
-
-.tm-browse-welcome[hidden] {
-  display: none;
-}
-
-.tm-browse-welcome__title {
-  margin: 0;
-  font-family: var(--font-tm-serif);
-  font-size: 20px;
-  font-weight: 700;
+.tm-browse-sidebar__random-link {
+  display: block;
+  margin-top: 18px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-tm-sans);
+  font-size: 13px;
+  font-weight: 500;
   color: var(--tm-cardinal);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-.tm-browse-welcome__hint {
-  margin: 0;
-  max-width: 420px;
-  font-size: 13.5px;
-  color: var(--tm-text-secondary);
+.tm-browse-sidebar__random-link:hover {
+  text-decoration: underline;
 }
 
 .pagination {
@@ -406,6 +415,7 @@
 .pagination span {
   min-width: 30px;
   height: 30px;
+  padding: 0 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -416,4 +426,8 @@
 .pagination a.pagination__current {
   background: var(--tm-cardinal);
   color: var(--tm-white);
+}
+
+.pagination__ellipsis {
+  color: var(--tm-text-secondary);
 }

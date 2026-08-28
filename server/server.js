@@ -154,5 +154,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Arbor running at http://localhost:${PORT}`);
+  console.log(`Neurolook running at http://localhost:${PORT}`);
 });

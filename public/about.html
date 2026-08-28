@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neurolook &mdash; About</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/transmitter-tokens.css">
+  <link rel="stylesheet" href="/css/transmitter-shared.css">
+  <link rel="stylesheet" href="/css/about.css">
+</head>
+<body class="tm-page">
+  <header class="tm-header">
+    <a href="/index.html" class="tm-header__logo">
+      <img src="/assets/logo/transmitter-logo.svg" alt="The Transmitter" height="24">
+    </a>
+    <nav class="tm-header__nav" aria-label="Primary">
+      <a href="/index.html" class="tm-header__nav-link">Search</a>
+      <a href="/browse.html" class="tm-header__nav-link">Browse</a>
+      <a href="/collection.html" class="tm-header__nav-link">
+        My Collection
+        <span class="tm-header__badge" id="collection-count" hidden></span>
+      </a>
+      <a href="/about.html" class="tm-header__nav-link tm-header__nav-link--active">About</a>
+    </nav>
+  </header>
+
+  <main class="tm-about">
+    <section class="tm-about__hero">
+      <h1>About Neurolook</h1>
+      <p>
+        Neurolook is powered by NeuroMorpho.Org, the largest public library of digitally
+        reconstructed neurons and glia. More than 260,000 three-dimensional tracings have been
+        contributed by over 1,000 laboratories worldwide. When researchers trace the shape of a
+        cell under the microscope, many share that reconstruction through NeuroMorpho.Org, making
+        it freely available for others to study, compare, and reuse.
+      </p>
+    </section>
+
+    <section class="tm-about__stats" id="about-stats" aria-label="Library statistics">
+      <div class="tm-about__stat">
+        <span class="tm-about__stat-value" id="stat-neurons">&hellip;</span>
+        <span class="tm-about__stat-label">Neurons</span>
+      </div>
+      <div class="tm-about__stat">
+        <span class="tm-about__stat-value" id="stat-species">&hellip;</span>
+        <span class="tm-about__stat-label">Species</span>
+      </div>
+      <div class="tm-about__stat">
+        <span class="tm-about__stat-value" id="stat-brain-regions">&hellip;</span>
+        <span class="tm-about__stat-label">Brain Regions</span>
+      </div>
+      <div class="tm-about__stat">
+        <span class="tm-about__stat-value" id="stat-archives">&hellip;</span>
+        <span class="tm-about__stat-label">Archives &amp; Labs</span>
+      </div>
+    </section>
+
+    <section class="tm-about__section">
+      <h2>How Neurolook works</h2>
+      <div class="tm-about__list">
+        <div class="tm-about__item">
+          <h3>Search &amp; Browse</h3>
+          <p>Query by neuron name or ID, or filter the full library by species, brain region, cell type, and archive.</p>
+        </div>
+        <div class="tm-about__item">
+          <h3>Compare</h3>
+          <p>Select two or more neurons to view their 3D morphology and metadata side by side.</p>
+        </div>
+        <div class="tm-about__item">
+          <h3>My Collection</h3>
+          <p>Save neurons to revisit later or export as CSV. Your collection lives only on this local instance.</p>
+        </div>
+        <div class="tm-about__item">
+          <h3>No sign-in</h3>
+          <p>Neurolook doesn't use accounts. Your collection and recently-viewed history are local to this instance.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tm-about__section">
+      <h2>Data &amp; attribution</h2>
+      <p>
+        Neurolook is powered by NeuroMorpho.Org's public API and does not host, modify, or
+        redistribute the underlying reconstructions. Every neuron detail page links back to its
+        original record on NeuroMorpho.Org and includes the citation required by their terms of use.
+      </p>
+      <p>
+        Powered by NeuroMorpho.Org, with data contributed by research laboratories worldwide,
+        supported in part by NIH/NINDS.
+      </p>
+    </section>
+
+    <section class="tm-about__section" id="citation-policy">
+      <h2>Citation Policy</h2>
+      <p>
+        When using any material found on or downloaded from NeuroMorpho.Org in your
+        publication(s), please include each and all three citations listed below:
+      </p>
+      <ul class="tm-about__citation-list">
+        <li>
+          The original paper(s) that describe the reconstructions, which appear(s) as a PubMed
+          link in the detailed metadata page of each reconstruction.
+        </li>
+        <li>The complete name: NeuroMorpho.Org (RRID:SCR_002145).</li>
+        <li>
+          Tecuatl C, Ljungquist B, Ascoli GA (2024) Accelerating the continuous community sharing
+          of digital neuromorphology data. FASEB Bioadv. 6(7):207-221. doi: 10.1096/fba.2024-00048
+        </li>
+      </ul>
+      <p>
+        Every neuron detail page in Neurolook includes a ready-to-copy citation formatted this way.
+      </p>
+    </section>
+
+    <section class="tm-about__section">
+      <h2>Disclaimer</h2>
+      <p>
+        Browsing and using the data in Neurolook is at the user&rsquo;s own risk. George
+        Mason University, the Krasnow Institute for Advanced Study, their leaders, and employees
+        make no representations, warranties or guarantees of any kind or nature regarding the
+        content or accuracy of the information accessible on NeuroMorpho.Org.
+      </p>
+      <p>
+        To the fullest extent permissible pursuant to applicable federal, state and local laws,
+        NeuroMorpho.Org, Neurolook, its developers, and any party involved in its creation,
+        maintenance, or modification, disclaim and shall not be liable for any damages, including, but not limited
+        to, direct, indirect, incidental, consequential, punitive damages, attorneys&rsquo; fees or
+        costs arising out of or related to access to or use of NeuroMorpho.Org. Links are provided
+        as a convenience only, and NeuroMorpho.Org makes no representations, warranties or
+        guarantees regarding their contents.
+      </p>
+      <p>
+        To learn more about the full terms of use, visit
+        <a href="https://neuromorpho.org/useterm.jsp" target="_blank" rel="noopener">NeuroMorpho.Org</a>.
+      </p>
+    </section>
+  </main>
+
+  <footer class="tm-footer">
+    <p class="tm-footer__text">Powered by NeuroMorpho.Org, with data from research labs worldwide.</p>
+    <div class="tm-footer__links">
+      <a href="/about.html#citation-policy">Citation Policy</a>
+      <a href="https://neuromorpho.org/useterm.jsp" target="_blank" rel="noopener">Terms of Use</a>
+      <a href="#">Contact Support</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/js/about.js"></script>
+</body>
+</html>

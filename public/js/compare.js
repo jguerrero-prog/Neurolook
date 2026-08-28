@@ -1,7 +1,7 @@
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
 import { escapeHtml } from './dom.js';
-import { buildCompareUrl } from './routes.js';
+import { buildCompareUrl, buildNeuronDetailUrl } from './routes.js';
 import {
   ORGANISM_FIELDS,
   ANATOMICAL_FIELDS,
@@ -9,6 +9,7 @@ import {
   buildFieldComparisonRows,
   buildMorphometryComparisonRows,
 } from './logic/neuronFields.js';
+import { buildCompareCsv } from './logic/compareExport.js';
 import { NeuronViewer } from './viewer.js';
 
 const requestedNeuronNames = (new URLSearchParams(window.location.search).get('names') || '')
@@ -30,16 +31,16 @@ function renderViewerColumns(comparisonEntries) {
     column.className = 'compare-column';
     column.innerHTML = `
       <div class="compare-column__header">
-        <div>
+        <a class="compare-column__info" href="${buildNeuronDetailUrl(neuron.name)}">
           <div class="compare-column__id">${escapeHtml(neuron.name)}</div>
           <div class="compare-column__title">${escapeHtml(neuron.cellType || 'Neuron')}</div>
           <div class="compare-column__meta">${escapeHtml(neuron.species)} &middot; ${escapeHtml(neuron.brainRegion)}</div>
-        </div>
+        </a>
         <a href="${buildCompareUrl(otherNames)}" aria-label="Remove ${escapeHtml(neuron.name)} from comparison">&times;</a>
       </div>
       <div class="compare-column__viewer-wrap">
         <div class="compare-column__viewer" id="viewer-${cssSafeId(neuron.name)}"></div>
-        <button type="button" class="compare-column__fullscreen" id="fullscreen-${cssSafeId(neuron.name)}" title="Fullscreen" aria-label="Fullscreen">
+        <button type="button" class="compare-column__fullscreen" id="fullscreen-${cssSafeId(neuron.name)}" title="Fullscreen (click the viewer, then press F)" aria-label="Fullscreen">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 5V1h4 M11 1h4v4 M15 11v4h-4 M5 15H1v-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -101,8 +102,33 @@ function showError(message) {
   errorBanner.hidden = false;
 }
 
+function bindCopyLinkButton() {
+  const copyLinkButton = document.getElementById('copy-link');
+  copyLinkButton.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    const originalLabel = copyLinkButton.textContent;
+    copyLinkButton.textContent = 'Copied!';
+    setTimeout(() => { copyLinkButton.textContent = originalLabel; }, 1500);
+  });
+}
+
+function bindExportCsvButton(neuronNames, sections) {
+  document.getElementById('export-csv').addEventListener('click', () => {
+    const csvText = buildCompareCsv(neuronNames, sections);
+    const blobUrl = URL.createObjectURL(new Blob([csvText], { type: 'text/csv' }));
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = blobUrl;
+    downloadLink.download = 'neurolook-comparison.csv';
+    downloadLink.click();
+
+    URL.revokeObjectURL(blobUrl);
+  });
+}
+
 async function init() {
   initCollectionBadge();
+  bindCopyLinkButton();
 
   if (requestedNeuronNames.length < 2) {
     document.getElementById('loading-state').hidden = true;
@@ -116,12 +142,19 @@ async function init() {
     const morphometryRecords = comparisonEntries.map((entry) => entry.morphometry);
     const neuronNamesRow = neurons.map((neuron) => neuron.name);
 
+    const sections = [
+      { title: 'Organism & Strain', containerId: 'organism-table', rows: buildFieldComparisonRows(neurons, ORGANISM_FIELDS) },
+      { title: 'Anatomical Classification', containerId: 'anatomical-table', rows: buildFieldComparisonRows(neurons, ANATOMICAL_FIELDS) },
+      { title: 'Experimental Details', containerId: 'experimental-table', rows: buildFieldComparisonRows(neurons, EXPERIMENTAL_FIELDS) },
+      { title: 'Morphometric Data', containerId: 'morphometry-table', rows: buildMorphometryComparisonRows(morphometryRecords) },
+    ];
+
     document.getElementById('compare-heading').textContent = `Comparing ${comparisonEntries.length} neurons`;
     renderViewerColumns(comparisonEntries);
-    renderComparisonTable('organism-table', neuronNamesRow, buildFieldComparisonRows(neurons, ORGANISM_FIELDS));
-    renderComparisonTable('anatomical-table', neuronNamesRow, buildFieldComparisonRows(neurons, ANATOMICAL_FIELDS));
-    renderComparisonTable('experimental-table', neuronNamesRow, buildFieldComparisonRows(neurons, EXPERIMENTAL_FIELDS));
-    renderComparisonTable('morphometry-table', neuronNamesRow, buildMorphometryComparisonRows(morphometryRecords));
+    for (const { containerId, rows } of sections) {
+      renderComparisonTable(containerId, neuronNamesRow, rows);
+    }
+    bindExportCsvButton(neuronNamesRow, sections);
     document.getElementById('loading-state').hidden = true;
     document.getElementById('compare-page').hidden = false;
 

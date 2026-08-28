@@ -134,6 +134,13 @@
   background: var(--color-viewer-bg);
 }
 
+/* Focusable so its keyboard shortcuts (R/W/F) only apply while it's the
+   one you're interacting with. */
+.tm-neuron-viewer:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--tm-thunder);
+}
+
 .tm-neuron-viewer canvas {
   display: block;
 }
@@ -225,7 +232,7 @@
 
 .tm-detail-card {
   border: 1px solid var(--tm-cloud);
-  border-radius: var(--radius-md);
+  border-radius: var(--tm-radius);
   padding: 18px;
   background: var(--tm-white);
 }
@@ -265,6 +272,7 @@
 .tm-field-list div {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   padding: 7px 0;
   border-bottom: 1px solid var(--tm-hairline);
   font-size: 13px;
@@ -275,11 +283,14 @@
 }
 
 .tm-field-list dt {
+  flex-shrink: 0;
   color: var(--tm-text-secondary);
 }
 
 .tm-field-list dd {
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-weight: 500;
   text-align: right;
   color: var(--tm-thunder);

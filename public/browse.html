@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Arbor &mdash; Browse</title>
+  <title>Neurolook &mdash; Browse</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="/css/fonts.css">
   <link rel="stylesheet" href="/css/tokens.css">
@@ -24,8 +24,7 @@
         My Collection
         <span class="tm-header__badge" id="collection-count" hidden></span>
       </a>
-      <a href="#" class="tm-header__nav-link">Documentation</a>
-      <a href="#" class="tm-header__nav-link">About</a>
+      <a href="/about.html" class="tm-header__nav-link">About</a>
     </nav>
   </header>
 
@@ -37,9 +36,8 @@
         <input id="browse-name-input" name="name" type="text" class="tm-search-bar__input" placeholder="Search by neuron name or ID&hellip;">
       </div>
       <button type="submit" class="tm-search-form__button">Search</button>
-      <span class="tm-browse-topbar__count" id="result-count" aria-live="polite"></span>
 
-      <div class="tm-combobox" data-combobox="sort">
+      <div class="tm-combobox tm-browse-topbar__sort" data-combobox="sort">
         <button type="button" class="tm-filter tm-combobox__trigger" aria-haspopup="listbox" aria-expanded="false">
           <span class="tm-combobox__value">Sort: Relevance</span>
           <img class="tm-filter__chevron" src="/assets/icons/chevron.svg" alt="" width="5" height="9">
@@ -62,7 +60,7 @@
       <aside class="tm-browse-sidebar" aria-label="Refine results">
         <div class="tm-browse-sidebar__header">
           <span>Refine results</span>
-          <a href="/browse.html">Clear all</a>
+          <a href="/browse.html" id="clear-all-filters">Clear all</a>
         </div>
         <fieldset class="tm-facet" id="facet-species">
           <legend class="tm-facet__label">Species</legend>
@@ -124,13 +122,18 @@
             <div class="tm-multiselect__pills"></div>
           </div>
         </fieldset>
+
+        <button type="button" class="tm-browse-sidebar__random-link" id="random-neuron-button">Random neuron &rarr;</button>
       </aside>
 
       <main class="tm-browse-results">
         <div id="error-banner" class="status-message status-message--error" role="alert" hidden></div>
-        <div class="tm-view-toggle" id="view-toggle" role="group" aria-label="Results view" hidden>
-          <button type="button" class="tm-view-toggle__button" data-view="grid" aria-pressed="false">Grid</button>
-          <button type="button" class="tm-view-toggle__button" data-view="list" aria-pressed="false">List</button>
+        <div class="tm-browse-results__toolbar">
+          <div class="tm-view-toggle" id="view-toggle" role="group" aria-label="Results view" hidden>
+            <button type="button" class="tm-view-toggle__button" data-view="grid" aria-pressed="false">Grid</button>
+            <button type="button" class="tm-view-toggle__button" data-view="list" aria-pressed="false">List</button>
+          </div>
+          <span class="tm-browse-results__count" id="result-count" aria-live="polite"></span>
         </div>
         <div class="loading-state" id="loading-state">
           <div class="spinner"></div>
@@ -140,9 +143,9 @@
           <p class="no-results__title">No neurons match these filters</p>
           <p class="no-results__hint">Try removing a filter or broadening your search.</p>
         </div>
-        <div class="tm-browse-welcome" id="browse-welcome" hidden>
-          <p class="tm-browse-welcome__title">Start browsing</p>
-          <p class="tm-browse-welcome__hint">Search by name above, or choose a species, brain region, cell type, or archive from the sidebar.</p>
+        <div class="no-results" id="no-filter-message" hidden>
+          <p class="no-results__title">Select a filter to see results</p>
+          <p class="no-results__hint">Choose a species, brain region, cell type, or archive from the sidebar, or search by name above.</p>
         </div>
         <div class="neuron-grid" id="results-grid"></div>
         <nav class="pagination" id="pagination" aria-label="Search results pages"></nav>
@@ -160,8 +163,8 @@
   <footer class="tm-footer">
     <p class="tm-footer__text">Powered by NeuroMorpho.Org, with data from research labs worldwide.</p>
     <div class="tm-footer__links">
-      <a href="#">Citation Policy</a>
-      <a href="#">Terms of Use</a>
+      <a href="/about.html#citation-policy">Citation Policy</a>
+      <a href="https://neuromorpho.org/useterm.jsp" target="_blank" rel="noopener">Terms of Use</a>
       <a href="#">Contact Support</a>
     </div>
   </footer>

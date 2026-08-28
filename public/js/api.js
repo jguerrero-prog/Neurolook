@@ -4,7 +4,7 @@ import { Literature } from './models/Literature.js';
 
 const REQUEST_TIMEOUT_MS = 15_000;
 
-// The sole network client for Arbor's own local server (never called
+// The sole network client for Neurolook's own local server (never called
 // directly from view code). Every method here returns model instances, not
 // raw JSON, so widgets never see the wire format.
 async function request(path, options) {

@@ -75,6 +75,23 @@ class MultiCombobox {
     return [...this.nativeContainer.querySelectorAll('input:checked')].map((checkbox) => checkbox.value);
   }
 
+  // For "Clear all" — resets this field's checkboxes/pills without
+  // navigating; the caller (browse.js) triggers one navigation afterward
+  // for all fields at once, rather than one per field.
+  clearSelection() {
+    this.nativeContainer.querySelectorAll('input:checked').forEach((checkbox) => { checkbox.checked = false; });
+    this.syncSelectedDisplay();
+  }
+
+  // Checks exactly one value (unchecking anything else) — for setting a
+  // programmatic default, as opposed to toggleValue's user-driven add/remove.
+  selectOnly(value) {
+    this.nativeContainer.querySelectorAll('input').forEach((checkbox) => {
+      checkbox.checked = checkbox.value === value;
+    });
+    this.syncSelectedDisplay();
+  }
+
   toggleValue(value) {
     const checkbox = this.getCheckbox(value);
     if (!checkbox) return;

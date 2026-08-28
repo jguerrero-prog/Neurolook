@@ -38,6 +38,10 @@
   --font-tm-sans: 'Gothia Sans VF', system-ui, sans-serif;
   --font-tm-serif: 'Gothia Serif Text', Georgia, serif;
   --font-tm-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Corner radius used everywhere the Transmitter redesign wants flatter
+     corners than the old design system's --radius-md (8px, tokens.css). */
+  --tm-radius: 3px;
 }
 
 /*

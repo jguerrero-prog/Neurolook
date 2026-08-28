@@ -1,16 +1,21 @@
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
 import { createNeuronCard } from './neuronCard.js';
-import { getSelection, toggleSelection, clearSelection } from './compareSelection.js';
-import { buildCompareUrl } from './routes.js';
+import { ensureScope, getSelection, toggleSelection, clearSelection } from './compareSelection.js';
+import { buildCompareUrl, buildNeuronDetailUrl } from './routes.js';
 import { buildPageWindow, buildResultRangeLabel } from './logic/pagination.js';
 import { initCombobox } from './combobox.js';
 import { initMultiCombobox } from './multiCombobox.js';
 
-const currentParams = new URLSearchParams(window.location.search);
+let currentParams = new URLSearchParams(window.location.search);
+let facetMultiComboboxes = new Map();
 const PAGE_SIZE = 12;
 const FACET_FIELDS = ['species', 'brain_region', 'cell_type', 'archive'];
-const RESULTS_VIEW_STORAGE_KEY = 'arbor:browseResultsView';
+const RESULTS_VIEW_STORAGE_KEY = 'neurolook:browseResultsView';
+// Landing on Browse with no name/filters used to show a "Start browsing"
+// prompt; defaulting to this instead means there's always something to look
+// at, and mouse is comfortably the most-reconstructed species in the library.
+const DEFAULT_SPECIES = 'mouse';
 
 // A per-viewer display preference, not app state, so it lives in
 // localStorage rather than the URL or server.
@@ -51,16 +56,79 @@ function selectedValuesFor(field) {
   return rawValue ? rawValue.split(',') : [];
 }
 
-// The search API requires a name or at least one filter; landing on Browse
-// with none set (e.g. from the nav link) should invite a choice instead of
-// firing a request that's guaranteed to fail.
+// The search API requires a name or at least one filter — used by
+// applyDefaultFiltersOnFirstLoad() to detect when nothing's set yet (e.g.
+// landing from the nav link) so a default can be applied before searching,
+// and by refreshResults() to detect when a later change clears everything.
 function hasSearchCriteria() {
   return Boolean(currentParams.get('name')) || FACET_FIELDS.some((field) => currentParams.get(field));
 }
 
-function showBrowseWelcome() {
+// Landing with no criteria at all (a fresh visit) defaults to mouse instead
+// of leaving the results area empty — updates the URL (via replaceState,
+// not a new history entry, since this is a normalization step rather than a
+// distinct visited state) and checks the species facet's checkbox to
+// match. Only called once, from init() — later on, deliberately clearing
+// every filter (unchecking the last one, "Clear all") is respected rather
+// than silently re-applied, otherwise the default could never be turned off.
+function applyDefaultFiltersOnFirstLoad() {
+  if (hasSearchCriteria()) return;
+  const params = new URLSearchParams();
+  params.set('species', DEFAULT_SPECIES);
+  params.set('page', '0');
+  currentParams = params;
+  history.replaceState(null, '', `/browse.html?${params.toString()}`);
+  facetMultiComboboxes.get('species')?.selectOnly(DEFAULT_SPECIES);
+}
+
+function showNoFilterMessage() {
   document.getElementById('loading-state').hidden = true;
-  document.getElementById('browse-welcome').hidden = false;
+  document.getElementById('no-results-message').hidden = true;
+  document.getElementById('view-toggle').hidden = true;
+  document.getElementById('results-grid').innerHTML = '';
+  document.getElementById('pagination').innerHTML = '';
+  document.getElementById('result-count').textContent = '';
+  document.getElementById('no-filter-message').hidden = false;
+}
+
+// Re-runs the same search init() does on first load — reused after a soft
+// navigation (filter change, pagination, a new name search, "Clear all") so
+// none of those need a full page reload.
+async function refreshResults() {
+  restoreFormValues();
+  if (!hasSearchCriteria()) {
+    showNoFilterMessage();
+    return;
+  }
+  document.getElementById('no-filter-message').hidden = true;
+  try {
+    await runSearch();
+  } catch (error) {
+    document.getElementById('loading-state').hidden = true;
+    showError(`Could not load results from NeuroMorpho.Org: ${error.message}`);
+  }
+}
+
+// Updates the address bar (so the URL stays bookmarkable/shareable) without
+// a page reload, then re-renders in place.
+function navigateToParams(params) {
+  currentParams = params;
+  history.pushState(null, '', `/browse.html?${params.toString()}`);
+  refreshResults();
+}
+
+async function handleRandomNeuronClick() {
+  const randomButton = document.getElementById('random-neuron-button');
+  randomButton.disabled = true;
+  randomButton.textContent = 'Picking a neuron…';
+  try {
+    const { name } = await api.getRandomNeuron();
+    window.location.href = buildNeuronDetailUrl(name);
+  } catch (error) {
+    randomButton.disabled = false;
+    randomButton.textContent = 'Random neuron →';
+    showError(`Could not pick a random neuron: ${error.message}`);
+  }
 }
 
 function restoreFormValues() {
@@ -127,7 +195,7 @@ function handleFilterFormSubmit(event) {
 }
 
 function navigateWithCurrentFilters(browseForm) {
-  window.location.href = `/browse.html?${buildQueryFromForm(browseForm).toString()}`;
+  navigateToParams(buildQueryFromForm(browseForm));
 }
 
 function bindBrowseFormEvents() {
@@ -136,11 +204,55 @@ function bindBrowseFormEvents() {
   browseForm.addEventListener('change', handleFilterFormChange);
 }
 
+// Lets a plain left-click soft-navigate instead of reloading, while leaving
+// modified clicks (open in new tab, etc.) to follow the real href normally.
+function interceptInternalLinkClick(event, handler) {
+  if (event.defaultPrevented || event.button !== 0) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  const link = event.target.closest('a[href]');
+  if (!link) return;
+  event.preventDefault();
+  handler(new URLSearchParams(new URL(link.href).search));
+}
+
+function bindPaginationEvents() {
+  document.getElementById('pagination').addEventListener('click', (event) => {
+    interceptInternalLinkClick(event, navigateToParams);
+  });
+}
+
+function bindClearAllFiltersEvent() {
+  document.getElementById('clear-all-filters').addEventListener('click', (event) => {
+    interceptInternalLinkClick(event, (params) => {
+      // navigateToParams alone only resets the URL/results — each facet's
+      // checkboxes/pills are separate DOM state the MultiComboboxes own,
+      // so they need to be told to clear too.
+      facetMultiComboboxes.forEach((multiCombobox) => multiCombobox.clearSelection());
+      navigateToParams(params);
+    });
+  });
+}
+
+function appendPageLink(paginationNav, page, hrefForPage, ariaLabel) {
+  const link = document.createElement('a');
+  link.href = hrefForPage(page);
+  link.textContent = String(page + 1);
+  link.setAttribute('aria-label', ariaLabel);
+  paginationNav.appendChild(link);
+}
+
+function appendEllipsis(paginationNav) {
+  paginationNav.appendChild(Object.assign(document.createElement('span'), {
+    className: 'pagination__ellipsis',
+    textContent: '…',
+  }));
+}
+
 function renderPaginationNav(currentPage, totalPages) {
   const paginationNav = document.getElementById('pagination');
   paginationNav.innerHTML = '';
 
-  const { pages, hasPrevious, hasNext } = buildPageWindow(currentPage, totalPages);
+  const { pages, hasPrevious, hasNext, showFirstPageLink, showLastPageLink } = buildPageWindow(currentPage, totalPages);
   const hrefForPage = (page) => {
     const params = new URLSearchParams(currentParams);
     params.set('page', String(page));
@@ -150,6 +262,10 @@ function renderPaginationNav(currentPage, totalPages) {
   if (hasPrevious) {
     paginationNav.appendChild(Object.assign(document.createElement('a'), { href: hrefForPage(currentPage - 1), textContent: '‹' }));
   }
+  if (showFirstPageLink) {
+    appendPageLink(paginationNav, 0, hrefForPage, 'Go to first page, page 1');
+    appendEllipsis(paginationNav);
+  }
   for (const page of pages) {
     const pageLink = document.createElement('a');
     pageLink.href = hrefForPage(page);
@@ -157,22 +273,24 @@ function renderPaginationNav(currentPage, totalPages) {
     if (page === currentPage) pageLink.classList.add('pagination__current');
     paginationNav.appendChild(pageLink);
   }
+  if (showLastPageLink) {
+    appendEllipsis(paginationNav);
+    appendPageLink(paginationNav, totalPages - 1, hrefForPage, `Go to last page, page ${totalPages}`);
+  }
   if (hasNext) {
     paginationNav.appendChild(Object.assign(document.createElement('a'), { href: hrefForPage(currentPage + 1), textContent: '›' }));
   }
 }
 
+// Comparing needs at least 2, so the tray (and its "Compare selected" link)
+// only ever appears once there are — nothing to guard against a 1-selected
+// state reaching Compare's error page.
 function updateSelectionTray() {
   const selectedNames = getSelection();
-  const canCompare = selectedNames.length >= 2;
-  const compareLink = document.getElementById('compare-link');
 
-  document.getElementById('selection-tray').hidden = selectedNames.length === 0;
-  document.getElementById('selection-count').textContent = `${selectedNames.length} selected`;
-  // Comparing needs at least 2 — rather than let the click land on an error
-  // page, send them back to pick another instead.
-  compareLink.href = canCompare ? buildCompareUrl(selectedNames) : '/browse.html';
-  compareLink.title = canCompare ? '' : 'Select at least one more neuron to compare';
+  document.getElementById('selection-tray').hidden = selectedNames.length < 2;
+  document.getElementById('selection-count').textContent = `${selectedNames.length} Neurons Selected`;
+  document.getElementById('compare-link').href = buildCompareUrl(selectedNames);
 }
 
 function handleCardSelectToggle(neuronName) {
@@ -194,7 +312,16 @@ async function runSearch() {
   const resultsGrid = document.getElementById('results-grid');
   const loadingState = document.getElementById('loading-state');
   const currentPage = Number(currentParams.get('page')) || 0;
-  loadingState.hidden = false;
+  // Re-searching (a filter change, pagination, etc.) already has a grid full
+  // of cards on screen — showing the tall loading-state block would shove
+  // them down instead. Only the very first search needs that; a re-search
+  // just dims the existing cards in place until the new ones are ready.
+  const hasExistingResults = resultsGrid.children.length > 0;
+  if (hasExistingResults) {
+    resultsGrid.classList.add('neuron-grid--loading');
+  } else {
+    loadingState.hidden = false;
+  }
 
   const { neurons, totalElements, totalPages } = await api.search({
     name: currentParams.get('name') || '',
@@ -208,6 +335,7 @@ async function runSearch() {
   });
 
   loadingState.hidden = true;
+  resultsGrid.classList.remove('neuron-grid--loading');
   document.getElementById('no-results-message').hidden = totalElements > 0;
   document.getElementById('view-toggle').hidden = totalElements === 0;
 
@@ -231,27 +359,29 @@ function showError(message) {
 }
 
 async function init() {
+  ensureScope('browse');
   initCollectionBadge();
   restoreFormValues();
   initCombobox(document.querySelector('.tm-combobox[data-combobox="sort"]'));
-  const facetMultiComboboxes = initFacetMultiComboboxes();
+  facetMultiComboboxes = initFacetMultiComboboxes();
   updateSelectionTray();
   bindBrowseFormEvents();
+  bindPaginationEvents();
+  bindClearAllFiltersEvent();
   bindSelectionTrayEvents();
   bindResultsViewToggle();
+  document.getElementById('random-neuron-button').addEventListener('click', handleRandomNeuronClick);
   applyResultsView(getStoredResultsView());
 
   try {
     await Promise.all(FACET_FIELDS.map((field) => loadFacetOptions(field, facetMultiComboboxes)));
-    if (hasSearchCriteria()) {
-      await runSearch();
-    } else {
-      showBrowseWelcome();
-    }
   } catch (error) {
     document.getElementById('loading-state').hidden = true;
-    showError(`Could not load results from NeuroMorpho.Org: ${error.message}`);
+    showError(`Could not load filters from NeuroMorpho.Org: ${error.message}`);
+    return;
   }
+  applyDefaultFiltersOnFirstLoad();
+  await refreshResults();
 }
 
 init();
@@ -264,6 +394,15 @@ init();
 // call again: neither does anything beyond replacing existing DOM content.
 window.addEventListener('pageshow', (event) => {
   if (!event.persisted) return;
-  if (hasSearchCriteria()) runSearch();
+  runSearch();
   updateSelectionTray();
+});
+
+// Filter/pagination changes soft-navigate via pushState (see
+// navigateToParams), which means the browser's actual Back/Forward buttons
+// fire popstate instead of a normal reload. Re-syncing every control
+// (facet checkboxes/pills, sort, name field) without re-fetching is more
+// than this is worth — a real reload here is simple and correct.
+window.addEventListener('popstate', () => {
+  window.location.reload();
 });

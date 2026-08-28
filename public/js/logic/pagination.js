@@ -3,7 +3,9 @@
 const WINDOW_SIZE = 5;
 
 export function buildPageWindow(currentPage, totalPages) {
-  if (totalPages <= 1) return { pages: [], hasPrevious: false, hasNext: false };
+  if (totalPages <= 1) {
+    return { pages: [], hasPrevious: false, hasNext: false, showFirstPageLink: false, showLastPageLink: false };
+  }
 
   const start = Math.max(0, currentPage - 2);
   const end = Math.min(totalPages, start + WINDOW_SIZE);
@@ -12,6 +14,11 @@ export function buildPageWindow(currentPage, totalPages) {
     pages: Array.from({ length: end - start }, (_, index) => start + index),
     hasPrevious: currentPage > 0,
     hasNext: currentPage < totalPages - 1,
+    // The visible page-number window doesn't always reach the first/last
+    // page (e.g. hundreds of pages of results) — a direct shortcut is the
+    // only way to reach either otherwise.
+    showFirstPageLink: start > 0,
+    showLastPageLink: end < totalPages,
   };
 }
 

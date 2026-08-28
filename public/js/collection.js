@@ -1,24 +1,22 @@
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
 import { createNeuronCard } from './neuronCard.js';
-import { getSelection, toggleSelection, clearSelection } from './compareSelection.js';
+import { ensureScope, getSelection, toggleSelection, clearSelection } from './compareSelection.js';
 import { buildCompareUrl } from './routes.js';
 import { summarizeCollection } from './logic/collectionSummary.js';
 import { buildCollectionCsv } from './logic/collectionExport.js';
 
 let collectionEntries = [];
 
+// Comparing needs at least 2, so the tray (and its "Compare selected" link)
+// only ever appears once there are — nothing to guard against a 1-selected
+// state reaching Compare's error page.
 function updateSelectionTray() {
   const selectedNames = getSelection();
-  const canCompare = selectedNames.length >= 2;
-  const compareLink = document.getElementById('compare-link');
 
-  document.getElementById('selection-tray').hidden = selectedNames.length === 0;
-  document.getElementById('selection-count').textContent = `${selectedNames.length} selected`;
-  // Comparing needs at least 2 — rather than let the click land on an error
-  // page, send them to Browse to pick another instead.
-  compareLink.href = canCompare ? buildCompareUrl(selectedNames) : '/browse.html';
-  compareLink.title = canCompare ? '' : 'Select at least one more neuron to compare';
+  document.getElementById('selection-tray').hidden = selectedNames.length < 2;
+  document.getElementById('selection-count').textContent = `${selectedNames.length} Neurons Selected`;
+  document.getElementById('compare-link').href = buildCompareUrl(selectedNames);
 }
 
 function renderCollectionGrid() {
@@ -77,7 +75,7 @@ function handleExportCsvClick() {
 
   const downloadLink = document.createElement('a');
   downloadLink.href = blobUrl;
-  downloadLink.download = 'arbor-collection.csv';
+  downloadLink.download = 'neurolook-collection.csv';
   downloadLink.click();
 
   URL.revokeObjectURL(blobUrl);
@@ -90,6 +88,7 @@ function showError(message) {
 }
 
 async function init() {
+  ensureScope('collection');
   initCollectionBadge();
   bindSelectionTrayEvents();
   updateSelectionTray();

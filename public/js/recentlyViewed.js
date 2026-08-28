@@ -1,7 +1,7 @@
 // Tracks the last few neurons a person opened, in localStorage — persists
 // across sessions (unlike compareSelection's sessionStorage), since "what did
 // I look at recently" is useful days later, not just within one browsing pass.
-const STORAGE_KEY = 'arbor:recentlyViewed';
+const STORAGE_KEY = 'neurolook:recentlyViewed';
 const MAX_ENTRIES = 8;
 
 function read() {

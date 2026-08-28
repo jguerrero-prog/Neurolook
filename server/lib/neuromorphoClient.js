@@ -2,14 +2,14 @@ import { getCached, setCached } from './cache.js';
 
 const BASE_URL = 'https://neuromorpho.org/api';
 const SIMILARITY_BASE_URL = 'https://neuromorpho.org/similarity';
-const USER_AGENT = 'Arbor/0.1 (local personal NeuroMorpho browser; non-commercial)';
+const USER_AGENT = 'Neurolook/0.1 (local personal NeuroMorpho browser; non-commercial)';
 const REQUEST_SPACING_MS = 200;
 
 const HOUR = 60 * 60 * 1000;
 
 // NeuroMorpho's terms ask API clients to throttle programmatic queries.
 // This chains every outgoing request onto the previous one with a fixed gap,
-// so Arbor never fires requests in a burst regardless of how many pages load at once.
+// so Neurolook never fires requests in a burst regardless of how many pages load at once.
 let requestQueue = Promise.resolve();
 
 function schedule(task) {

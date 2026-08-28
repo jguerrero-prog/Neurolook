@@ -51,6 +51,12 @@
   color: var(--tm-cardinal);
 }
 
+.tm-compare-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .compare-viewers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -59,7 +65,7 @@
 
 .compare-column {
   border: 1px solid var(--tm-cloud);
-  border-radius: var(--radius-md);
+  border-radius: var(--tm-radius);
   background: var(--tm-white);
   overflow: hidden;
 }
@@ -69,6 +75,17 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 14px 16px 10px;
+}
+
+.compare-column__info {
+  display: block;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.compare-column__info:hover .compare-column__title {
+  color: var(--tm-cardinal);
 }
 
 .compare-column__id {
@@ -104,6 +121,13 @@
   align-items: center;
   justify-content: center;
   font-size: 13px;
+}
+
+/* Focusable so its keyboard shortcuts (R/W/F) only apply to whichever
+   column you're interacting with. */
+.compare-column__viewer:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--tm-thunder);
 }
 
 .compare-column__fullscreen {
@@ -153,7 +177,7 @@
 
 .compare-table {
   border: 1px solid var(--tm-cloud);
-  border-radius: var(--radius-md);
+  border-radius: var(--tm-radius);
   overflow: hidden;
   background: var(--tm-white);
 }
