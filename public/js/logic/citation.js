@@ -14,7 +14,7 @@ export function buildCitationLines(neuron, literatureEntries) {
   return [
     ...publicationLines,
     'NeuroMorpho.Org (RRID:SCR_002145).',
-    'Tecuatl C, et al. (2024) NeuroMorpho.Org: a database of digitally reconstructed neurons and glia. Neuroinformatics.',
+    'Tecuatl C, Ljungquist B, Ascoli GA (2024) Accelerating the continuous community sharing of digital neuromorphology data. FASEB Bioadv. 6(7):207-221. doi: 10.1096/fba.2024-00048',
     `Neuron ID for citation: ${neuron.name}`,
   ];
 }

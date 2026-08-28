@@ -1,18 +1,54 @@
-.compare-page {
+/* Re-themes the shared components from base.css/tokens.css (status
+   messages, loading state, breadcrumb) to the Transmitter palette by
+   overriding the custom properties they read — only inside .tm-page, so
+   pages that don't carry that class yet are untouched. Page-specific
+   layout follows below. */
+.tm-page {
+  --font-sans: var(--font-tm-sans);
+  --font-mono: var(--font-tm-mono);
+  --color-bg: var(--tm-elm);
+  --color-surface: var(--tm-white);
+  --color-surface-alt: var(--tm-platinum);
+  --color-border: var(--tm-cloud);
+  --color-border-strong: var(--tm-sky);
+  --color-text: var(--tm-thunder);
+  --color-text-secondary: var(--tm-text-secondary);
+  --color-text-tertiary: var(--tm-storm);
+  --color-accent: var(--tm-cardinal);
+  --color-accent-hover: var(--tm-rosewood);
+  --color-accent-tint: var(--tm-azalea);
+  --color-accent-tint-strong: var(--tm-primrose);
+}
+
+.tm-compare-main {
+  flex: 1;
+}
+
+.breadcrumb {
+  border-bottom-width: 0.5px;
+  border-bottom-color: var(--tm-hickory);
+}
+
+.tm-compare-page {
   padding: 22px 40px 40px;
 }
 
-.compare-page__title {
+.tm-compare-page__title {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin: 0 0 20px;
 }
 
-.compare-page__title h1 {
+.tm-compare-page__title h1 {
   margin: 0;
   font-size: 24px;
   font-weight: 600;
+  color: var(--tm-thunder);
+}
+
+.tm-compare-page__title a {
+  color: var(--tm-cardinal);
 }
 
 .compare-viewers {
@@ -22,9 +58,9 @@
 }
 
 .compare-column {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--tm-cloud);
   border-radius: var(--radius-md);
-  background: var(--color-surface);
+  background: var(--tm-white);
   overflow: hidden;
 }
 
@@ -36,25 +72,30 @@
 }
 
 .compare-column__id {
-  font-family: var(--font-mono);
+  font-family: var(--font-tm-mono);
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: var(--tm-text-secondary);
 }
 
 .compare-column__title {
   font-size: 14.5px;
   font-weight: 600;
   margin: 2px 0;
+  color: var(--tm-thunder);
 }
 
 .compare-column__meta {
   font-size: 12.5px;
-  color: var(--color-text-secondary);
+  color: var(--tm-text-secondary);
+}
+
+.compare-column__viewer-wrap {
+  position: relative;
+  margin: 0 16px 12px;
 }
 
 .compare-column__viewer {
   height: 300px;
-  margin: 0 16px 12px;
   border-radius: 6px;
   overflow: hidden;
   background: var(--color-viewer-bg);
@@ -65,35 +106,62 @@
   font-size: 13px;
 }
 
+.compare-column__fullscreen {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: oklch(100% 0 0 / 0.92);
+  color: var(--tm-thunder);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.compare-column__viewer-wrap:hover .compare-column__fullscreen,
+.compare-column__fullscreen:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .compare-column__download {
   display: block;
   text-align: center;
   font-size: 12.5px;
   font-weight: 600;
   margin: 0 16px 16px;
+  color: var(--tm-cardinal);
 }
 
-.compare-table-section {
+.tm-compare-table-section {
   margin-top: 26px;
 }
 
-.compare-table-section h2 {
+.tm-compare-table-section h2 {
   font-size: 14px;
   font-weight: 600;
   margin: 0 0 10px;
+  color: var(--tm-thunder);
 }
 
 .compare-table {
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--tm-cloud);
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--color-surface);
+  background: var(--tm-white);
 }
 
 .compare-table__row {
   display: grid;
   font-size: 13px;
-  border-bottom: 1px solid oklch(94% 0.004 250);
+  border-bottom: 1px solid var(--tm-hairline);
 }
 
 .compare-table__row:last-child {
@@ -105,23 +173,24 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--color-text-secondary);
-  background: var(--color-surface-alt);
+  color: var(--tm-text-secondary);
+  background: var(--tm-platinum);
 }
 
 .compare-table__cell {
   padding: 9px 16px;
+  color: var(--tm-thunder);
 }
 
 .compare-table__cell--label {
-  color: var(--color-text-secondary);
+  color: var(--tm-text-secondary);
 }
 
 .compare-table__cell--differs {
-  background: oklch(97% 0.02 60);
+  background: var(--tm-azalea);
   font-weight: 500;
 }
 
 #morphometry-table .compare-table__cell:not(.compare-table__cell--label) {
-  font-family: var(--font-mono);
+  font-family: var(--font-tm-mono);
 }

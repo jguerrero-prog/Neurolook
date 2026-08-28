@@ -2,10 +2,9 @@ import { escapeHtml } from './dom.js';
 import { buildNeuronDetailUrl } from './routes.js';
 
 // Renders one neuron summary card from a Neuron model instance. Used by both
-// the browse grid and the collection grid, so selection (compare checkbox),
-// the cached-offline badge, and the remove action are all optional depending
-// on which page is calling it.
-export function createNeuronCard(neuron, { selected = false, onToggleSelect, cached, onRemove, note } = {}) {
+// the browse grid and the collection grid, so selection (compare checkbox)
+// and the remove action are both optional depending on which page is calling it.
+export function createNeuronCard(neuron, { selected = false, onToggleSelect, onRemove, note } = {}) {
   const card = document.createElement('article');
   card.className = `neuron-card${selected ? ' neuron-card--selected' : ''}`;
 
@@ -21,7 +20,6 @@ export function createNeuronCard(neuron, { selected = false, onToggleSelect, cac
     <h3 class="neuron-card__title">${escapeHtml(neuron.cellType || 'Unclassified neuron')}</h3>
     <p class="neuron-card__meta">${escapeHtml(neuron.species)}${neuron.brainRegion ? ` &middot; ${escapeHtml(neuron.brainRegion)}` : ''}</p>
     <div class="neuron-card__footer">
-      ${cached === undefined ? '' : `<span class="neuron-card__cache-status">${cached ? 'Cached offline' : 'Metadata only'}</span>`}
       <a class="neuron-card__link" href="${buildNeuronDetailUrl(neuron.name)}">View details &rarr;</a>
     </div>
   `;

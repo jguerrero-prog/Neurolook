@@ -1,87 +1,144 @@
-.neuron-detail {
+/* Re-themes the shared components from base.css/tokens.css (buttons,
+   status messages, loading state, cache badge, breadcrumb) to the
+   Transmitter palette by overriding the custom properties they read —
+   only inside .tm-page, so Collection/Compare (which don't carry that
+   class yet) are untouched. Page-specific layout follows below. */
+.tm-page {
+  --font-sans: var(--font-tm-sans);
+  --font-mono: var(--font-tm-mono);
+  --color-bg: var(--tm-elm);
+  --color-surface: var(--tm-white);
+  --color-surface-alt: var(--tm-platinum);
+  --color-border: var(--tm-cloud);
+  --color-border-strong: var(--tm-sky);
+  --color-text: var(--tm-thunder);
+  --color-text-secondary: var(--tm-text-secondary);
+  --color-text-tertiary: var(--tm-storm);
+  --color-accent: var(--tm-cardinal);
+  --color-accent-hover: var(--tm-rosewood);
+  --color-accent-tint: var(--tm-azalea);
+  --color-accent-tint-strong: var(--tm-primrose);
+}
+
+.tm-neuron-main {
+  flex: 1;
+}
+
+.breadcrumb {
+  border-bottom-width: 0.5px;
+  border-bottom-color: var(--tm-hickory);
+}
+
+/* Pinned to the viewport, not the end of the document flow — matches the
+   same tray treatment used on Browse and Collection. */
+.tm-page .selection-tray {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  background: var(--tm-midnight);
+  border-top-color: var(--tm-midnight);
+}
+
+.tm-page .selection-tray__label {
+  font-family: var(--font-tm-serif);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--tm-elm);
+}
+
+.tm-page .selection-tray .button--primary {
+  background: var(--tm-white);
+  color: var(--tm-lily);
+}
+
+.tm-page .selection-tray .button--secondary {
+  background: transparent;
+  border-color: var(--tm-sky);
+  color: var(--tm-elm);
+}
+
+.tm-page .selection-tray .button {
+  border-radius: 3px;
+}
+
+.tm-neuron-detail {
   padding: 22px 40px 40px;
 }
 
-.neuron-detail__title {
+.tm-neuron-detail__title {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 20px;
 }
 
-.neuron-detail__heading {
+.tm-neuron-detail__heading {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.neuron-detail__heading h1 {
+.tm-neuron-detail__heading h1 {
   margin: 0;
   font-size: 26px;
   font-weight: 600;
+  color: var(--tm-thunder);
 }
 
-.neuron-detail__domain {
-  padding: 4px 10px;
-  border-radius: 12px;
-  background: var(--color-success-tint);
-  color: var(--color-success-text);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.neuron-detail__subtitle {
+.tm-neuron-detail__subtitle {
   font-size: 14px;
-  color: var(--color-text-secondary);
+  color: var(--tm-text-secondary);
   margin-top: 6px;
 }
 
-.neuron-detail__actions {
+.tm-neuron-detail__actions {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.neuron-note {
+.tm-neuron-note {
   margin: 0 0 20px;
   padding: 14px 16px;
-  background: var(--color-surface-alt);
-  border-left: 3px solid var(--color-accent);
+  background: var(--tm-maple);
+  border-left: 3px solid var(--tm-thunder);
   border-radius: 4px;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--color-text);
+  color: var(--tm-thunder);
 }
 
-.neuron-note[hidden] {
+.tm-neuron-note[hidden] {
   display: none;
 }
 
-.neuron-detail__layout {
+.tm-neuron-detail__layout {
   display: flex;
   gap: 28px;
   align-items: flex-start;
 }
 
-.neuron-viewer-column {
+.tm-neuron-viewer-column {
   flex: 1;
   min-width: 0;
 }
 
-.neuron-viewer {
+.tm-neuron-viewer {
   position: relative;
   height: 560px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--tm-cloud);
   border-radius: 10px;
   overflow: hidden;
   background: var(--color-viewer-bg);
 }
 
-.neuron-viewer canvas {
+.tm-neuron-viewer canvas {
   display: block;
 }
 
-.viewer-toolbar {
+.tm-viewer-toolbar {
   position: absolute;
   top: 14px;
   right: 14px;
@@ -95,17 +152,17 @@
   transition: opacity 0.15s ease;
 }
 
-.viewer-toolbar[hidden] {
+.tm-viewer-toolbar[hidden] {
   display: none;
 }
 
-.neuron-viewer:hover .viewer-toolbar,
-.viewer-toolbar:focus-within {
+.tm-neuron-viewer:hover .tm-viewer-toolbar,
+.tm-viewer-toolbar:focus-within {
   opacity: 1;
   pointer-events: auto;
 }
 
-.viewer-toolbar__button {
+.tm-viewer-toolbar__button {
   width: 32px;
   height: 32px;
   display: flex;
@@ -114,20 +171,20 @@
   border: none;
   border-radius: 5px;
   background: transparent;
-  color: var(--color-text);
+  color: var(--tm-thunder);
   cursor: pointer;
 }
 
-.viewer-toolbar__button:hover {
-  background: var(--color-surface-alt);
+.tm-viewer-toolbar__button:hover {
+  background: var(--tm-platinum);
 }
 
-.viewer-toolbar__button--active {
-  background: var(--color-accent-tint);
-  color: var(--color-accent);
+.tm-viewer-toolbar__button--active {
+  background: var(--tm-azalea);
+  color: var(--tm-cardinal);
 }
 
-.neuron-viewer__status {
+.tm-neuron-viewer__status {
   position: absolute;
   inset: 0;
   display: flex;
@@ -137,28 +194,28 @@
   color: var(--color-viewer-text);
 }
 
-.neuron-viewer__legend {
+.tm-neuron-viewer__legend {
   display: flex;
   gap: 16px;
   margin-top: 14px;
   font-size: 12.5px;
-  color: var(--color-text-secondary);
+  color: var(--tm-text-secondary);
 }
 
-.neuron-viewer__legend span {
+.tm-neuron-viewer__legend span {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.neuron-viewer__legend i {
+.tm-neuron-viewer__legend i {
   width: 9px;
   height: 9px;
   border-radius: 50%;
   display: inline-block;
 }
 
-.neuron-detail__sidebar {
+.tm-neuron-detail__sidebar {
   width: 380px;
   flex-shrink: 0;
   display: flex;
@@ -166,84 +223,108 @@
   gap: 18px;
 }
 
-.detail-card {
-  border: 1px solid var(--color-border);
+.tm-detail-card {
+  border: 1px solid var(--tm-cloud);
   border-radius: var(--radius-md);
   padding: 18px;
-  background: var(--color-surface);
+  background: var(--tm-white);
 }
 
-.detail-card h2 {
+.tm-detail-card h2 {
   font-size: 14px;
   font-weight: 600;
   margin: 0 0 12px;
+  color: var(--tm-thunder);
 }
 
-.detail-card__full-width {
+.tm-detail-card__full-width {
   width: 100%;
   margin-bottom: 10px;
+  background: var(--tm-thunder);
 }
 
-.detail-card__external-link {
+.tm-detail-card__full-width:hover {
+  background: var(--tm-platinum);
+  border-width: 0.5px;
+  border-color: var(--tm-sky);
+  color: var(--tm-lily);
+}
+
+.tm-detail-card__external-link {
   display: block;
   font-size: 12.5px;
   font-weight: 600;
   text-align: center;
+  color: var(--tm-thunder);
 }
 
-.field-list {
+.tm-field-list {
   margin: 0;
 }
 
-.field-list div {
+.tm-field-list div {
   display: flex;
   justify-content: space-between;
   padding: 7px 0;
-  border-bottom: 1px solid oklch(94% 0.004 250);
+  border-bottom: 1px solid var(--tm-hairline);
   font-size: 13px;
 }
 
-.field-list div:last-child {
+.tm-field-list div:last-child {
   border-bottom: none;
 }
 
-.field-list dt {
-  color: var(--color-text-secondary);
+.tm-field-list dt {
+  color: var(--tm-text-secondary);
 }
 
-.field-list dd {
+.tm-field-list dd {
   margin: 0;
   font-weight: 500;
   text-align: right;
+  color: var(--tm-thunder);
 }
 
-.field-list--mono dd {
-  font-family: var(--font-mono);
+.tm-field-list--mono dd {
+  font-family: var(--font-tm-mono);
 }
 
-.similar-neurons {
+.tm-similar-neurons {
   margin-top: 24px;
 }
 
-.similar-neurons__title {
+.tm-similar-neurons__title {
   font-size: 15px;
   font-weight: 600;
   margin: 0 0 12px;
+  color: var(--tm-thunder);
 }
 
-.similar-neurons__grid {
+.tm-similar-neurons__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 
-.citation-block {
+/* Match the enlarged preview used for Browse's cards (base.css's shared
+   default is 110px) — same component, same treatment. */
+.tm-similar-neurons__grid .neuron-card__thumb {
+  height: 200px;
+  background: var(--tm-black);
+}
+
+.tm-similar-neurons__grid .neuron-card--selected {
+  border-color: var(--tm-cloud);
+  background: var(--tm-platinum);
+}
+
+.tm-citation-block {
   margin: 0 0 12px;
   padding: 12px 14px;
-  background: var(--color-surface-alt);
-  border-left: 3px solid var(--color-accent);
+  background: var(--tm-platinum);
+  border-left: 3px solid var(--tm-cardinal);
   border-radius: 4px;
   font-size: 12.5px;
   line-height: 1.6;
-  color: var(--color-text);
+  color: var(--tm-thunder);
 }

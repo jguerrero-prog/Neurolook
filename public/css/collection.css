@@ -1,35 +1,106 @@
-.collection-page {
+/* Re-themes the shared components from base.css/tokens.css (buttons,
+   status messages, loading state, selection tray, neuron cards) to the
+   Transmitter palette by overriding the custom properties they read —
+   only inside .tm-page, so Compare (which doesn't carry that class yet)
+   is untouched. Page-specific layout follows below. */
+.tm-page {
+  --font-sans: var(--font-tm-sans);
+  --font-mono: var(--font-tm-mono);
+  --color-bg: var(--tm-elm);
+  --color-surface: var(--tm-white);
+  --color-surface-alt: var(--tm-platinum);
+  --color-border: var(--tm-cloud);
+  --color-border-strong: var(--tm-sky);
+  --color-text: var(--tm-thunder);
+  --color-text-secondary: var(--tm-text-secondary);
+  --color-text-tertiary: var(--tm-storm);
+  --color-accent: var(--tm-cardinal);
+  --color-accent-hover: var(--tm-rosewood);
+  --color-accent-tint: var(--tm-azalea);
+  --color-accent-tint-strong: var(--tm-primrose);
+}
+
+.tm-collection-page {
+  flex: 1;
   padding: 24px 40px 32px;
 }
 
-.collection-page__header {
+.tm-collection-page__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
 }
 
-.collection-page__header h1 {
+.tm-collection-page__header h1 {
   margin: 0;
   font-size: 24px;
   font-weight: 600;
+  color: var(--tm-thunder);
 }
 
-.collection-page__summary {
+.tm-collection-page__summary {
   font-size: 13.5px;
-  color: var(--color-text-secondary);
+  color: var(--tm-text-secondary);
   margin: 6px 0 0;
 }
 
-.collection-page .neuron-grid {
+.tm-collection-page .neuron-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
   margin-top: 20px;
 }
 
-.collection-page__empty {
+/* Match the enlarged, black-backed preview used everywhere else this
+   shared card appears (Browse, Similar Neurons). */
+.tm-collection-page .neuron-card__thumb {
+  height: 200px;
+  background: var(--tm-black);
+}
+
+.tm-collection-page .neuron-card--selected {
+  border-color: var(--tm-cloud);
+  background: var(--tm-platinum);
+}
+
+.tm-collection-page__empty {
   margin-top: 40px;
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--tm-text-secondary);
   font-size: 14px;
+}
+
+/* Pinned to the viewport, not the end of the document flow — otherwise a
+   tall collection grid pushes it below the fold until you scroll to it. */
+.tm-page .selection-tray {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  background: var(--tm-midnight);
+  border-top-color: var(--tm-midnight);
+}
+
+.tm-page .selection-tray__label {
+  font-family: var(--font-tm-serif);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--tm-elm);
+}
+
+.tm-page .button--primary {
+  background: var(--tm-white);
+  color: var(--tm-lily);
+}
+
+.tm-page .button--danger {
+  background: transparent;
+  border-width: 0.5px;
+  border-color: var(--tm-white);
+  color: var(--tm-elm);
+}
+
+.tm-page .selection-tray .button {
+  border-radius: 3px;
 }

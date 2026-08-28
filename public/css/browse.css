@@ -29,7 +29,7 @@
 .tm-browse-topbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   padding: 16px 40px;
   border-bottom: 0.5px solid var(--tm-hickory);
 }
@@ -60,6 +60,7 @@
 .tm-browse-sidebar {
   width: 280px;
   flex-shrink: 0;
+  border-right: 0.5px solid var(--tm-hickory);
   padding: 24px;
   overflow-x: hidden;
 }
@@ -69,15 +70,21 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 0.5px solid var(--tm-hickory);
   font-size: 14px;
   font-weight: 600;
   color: var(--tm-thunder);
 }
 
 .tm-browse-sidebar__header a {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--tm-cardinal);
+}
+
+.tm-browse-sidebar__header a:hover {
+  color: var(--tm-rosewood);
 }
 
 .tm-facet {
@@ -190,6 +197,7 @@
    (110px) — scoped to .tm-page so Collection's cards are unaffected. */
 .tm-page .neuron-card__thumb {
   height: 200px;
+  background: var(--tm-black);
 }
 
 .tm-page .neuron-card--selected {
@@ -206,6 +214,7 @@
   bottom: 0;
   z-index: 30;
   background: var(--tm-midnight);
+  border-top-color: var(--tm-midnight);
 }
 
 .tm-page .selection-tray__label {

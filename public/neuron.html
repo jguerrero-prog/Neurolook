@@ -37,12 +37,13 @@
     </nav>
   </header>
 
-  <div class="breadcrumb">
-    <a href="/index.html">Home</a> &nbsp;/&nbsp; <a href="/browse.html">Browse</a> &nbsp;/&nbsp;
-    <span class="breadcrumb__current" id="breadcrumb-name">&hellip;</span>
-  </div>
+  <main class="tm-neuron-main">
+    <div class="breadcrumb">
+      <a href="/index.html">Home</a> &nbsp;/&nbsp; <a href="/browse.html" id="breadcrumb-browse-link">Browse</a> &nbsp;/&nbsp;
+      <span class="breadcrumb__current" id="breadcrumb-name">&hellip;</span>
+    </div>
 
-  <div id="error-banner" class="status-message status-message--error" role="alert" hidden></div>
+    <div id="error-banner" class="status-message status-message--error" role="alert" hidden></div>
 
   <div class="loading-state" id="loading-state">
     <div class="spinner"></div>
@@ -54,8 +55,6 @@
       <div>
         <div class="tm-neuron-detail__heading">
           <h1 id="neuron-title"></h1>
-          <span class="tm-neuron-detail__domain" id="neuron-domain"></span>
-          <span class="cache-badge" id="cache-badge" hidden><span class="cache-badge__dot"></span>Cached</span>
         </div>
         <div class="tm-neuron-detail__subtitle" id="neuron-subtitle"></div>
       </div>
@@ -136,6 +135,14 @@
         </section>
       </div>
     </div>
+  </div>
+  </main>
+
+  <div class="selection-tray" id="selection-tray" hidden>
+    <span class="selection-tray__label" id="selection-count"></span>
+    <div class="selection-tray__spacer"></div>
+    <button type="button" class="button button--secondary" id="clear-selection">Clear selection</button>
+    <a class="button button--primary" id="compare-link" href="/browse.html">Compare selected</a>
   </div>
 
   <footer class="tm-footer">

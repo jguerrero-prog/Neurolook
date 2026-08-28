@@ -1,3 +1,5 @@
 node_modules/
 data/cache/
+data/swc/
+data/collection.json
 .DS_Store

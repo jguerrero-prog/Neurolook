@@ -118,7 +118,7 @@
 
 .tm-recently-viewed-card__thumb {
   height: 150px;
-  background: var(--tm-platinum);
+  background: var(--tm-black);
   display: flex;
   align-items: center;
   justify-content: center;

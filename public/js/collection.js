@@ -10,9 +10,15 @@ let collectionEntries = [];
 
 function updateSelectionTray() {
   const selectedNames = getSelection();
+  const canCompare = selectedNames.length >= 2;
+  const compareLink = document.getElementById('compare-link');
+
   document.getElementById('selection-tray').hidden = selectedNames.length === 0;
   document.getElementById('selection-count').textContent = `${selectedNames.length} selected`;
-  document.getElementById('compare-link').href = buildCompareUrl(selectedNames);
+  // Comparing needs at least 2 — rather than let the click land on an error
+  // page, send them to Browse to pick another instead.
+  compareLink.href = canCompare ? buildCompareUrl(selectedNames) : '/browse.html';
+  compareLink.title = canCompare ? '' : 'Select at least one more neuron to compare';
 }
 
 function renderCollectionGrid() {
@@ -27,7 +33,6 @@ function renderCollectionGrid() {
     collectionGrid.appendChild(createNeuronCard(entry.neuron, {
       selected: selectedNames.has(entry.neuron.name),
       onToggleSelect: handleCardSelectToggle,
-      cached: entry.cached,
       onRemove: handleRemoveCardClick,
     }));
   }
@@ -101,3 +106,14 @@ async function init() {
 }
 
 init();
+
+// A bfcache restore (e.g. clicking back from Browse) reuses the frozen page
+// as-is rather than reloading it — so it can show a stale compare selection
+// (tray visibility/count, checked cards) left over from before you navigated
+// away. Re-rendering against the already-loaded collectionEntries brings
+// both back in sync with whatever is actually in sessionStorage right now.
+window.addEventListener('pageshow', (event) => {
+  if (!event.persisted) return;
+  renderCollectionGrid();
+  updateSelectionTray();
+});

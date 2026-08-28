@@ -37,7 +37,12 @@ function renderViewerColumns(comparisonEntries) {
         </div>
         <a href="${buildCompareUrl(otherNames)}" aria-label="Remove ${escapeHtml(neuron.name)} from comparison">&times;</a>
       </div>
-      <div class="compare-column__viewer" id="viewer-${cssSafeId(neuron.name)}"></div>
+      <div class="compare-column__viewer-wrap">
+        <div class="compare-column__viewer" id="viewer-${cssSafeId(neuron.name)}"></div>
+        <button type="button" class="compare-column__fullscreen" id="fullscreen-${cssSafeId(neuron.name)}" title="Fullscreen" aria-label="Fullscreen">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 5V1h4 M11 1h4v4 M15 11v4h-4 M5 15H1v-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
       <a class="compare-column__download" href="${api.getSwcUrl(neuron.name)}" download="${neuron.swcFilename}">Download SWC</a>
     `;
     viewersGrid.appendChild(column);
@@ -50,7 +55,10 @@ async function loadViewers(comparisonEntries) {
     try {
       const swcResponse = await fetch(api.getSwcUrl(neuron.name));
       if (!swcResponse.ok) throw new Error('SWC file unavailable');
-      new NeuronViewer(viewerContainer).loadSwc(await swcResponse.text());
+      const viewer = new NeuronViewer(viewerContainer);
+      viewer.loadSwc(await swcResponse.text());
+      document.getElementById(`fullscreen-${cssSafeId(neuron.name)}`)
+        .addEventListener('click', () => viewer.toggleFullscreen());
     } catch {
       viewerContainer.textContent = 'Could not load 3D morphology.';
     }

@@ -234,11 +234,7 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.neuron-card__cache-status {
-  font-size: 11px;
-  color: var(--color-text-tertiary);
+  margin-top: auto;
 }
 
 .neuron-card__remove {
@@ -325,22 +321,3 @@ a:hover {
   to { transform: rotate(360deg); }
 }
 
-.cache-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  border-radius: 12px;
-  background: var(--color-surface-alt);
-  color: var(--color-text-tertiary);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.cache-badge__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-text-tertiary);
-  display: inline-block;
-}

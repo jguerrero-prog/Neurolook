@@ -4,34 +4,36 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Arbor &mdash; My Collection</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/fonts.css">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/transmitter-tokens.css">
+  <link rel="stylesheet" href="/css/transmitter-shared.css">
   <link rel="stylesheet" href="/css/collection.css">
 </head>
-<body>
-  <header class="site-header">
-    <div class="site-header__brand">
-      <div class="site-header__brand-text">
-        <span class="site-header__name">Arbor<span class="site-header__name-accent">.</span></span>
-        <span class="site-header__tagline">Neuron Morphology Browser</span>
-      </div>
-    </div>
-    <nav class="site-header__nav" aria-label="Primary">
-      <a href="/index.html" class="site-header__nav-link">Search</a>
-      <a href="/browse.html" class="site-header__nav-link">Browse</a>
-      <a href="/collection.html" class="site-header__nav-link site-header__nav-link--active">
+<body class="tm-page">
+  <header class="tm-header">
+    <a href="/index.html" class="tm-header__logo">
+      <img src="/assets/logo/transmitter-logo.svg" alt="The Transmitter" height="24">
+    </a>
+    <nav class="tm-header__nav" aria-label="Primary">
+      <a href="/index.html" class="tm-header__nav-link">Search</a>
+      <a href="/browse.html" class="tm-header__nav-link">Browse</a>
+      <a href="/collection.html" class="tm-header__nav-link tm-header__nav-link--active">
         My Collection
-        <span class="site-header__badge" id="collection-count" hidden></span>
+        <span class="tm-header__badge" id="collection-count" hidden></span>
       </a>
+      <a href="#" class="tm-header__nav-link">Documentation</a>
+      <a href="#" class="tm-header__nav-link">About</a>
     </nav>
   </header>
 
-  <div class="collection-page">
-    <div class="collection-page__header">
+  <main class="tm-collection-page">
+    <div class="tm-collection-page__header">
       <div>
         <h1>My Collection</h1>
-        <p id="collection-summary" class="collection-page__summary">Loading&hellip;</p>
+        <p id="collection-summary" class="tm-collection-page__summary">Loading&hellip;</p>
       </div>
       <button type="button" class="button button--secondary" id="export-csv">Export CSV</button>
     </div>
@@ -42,10 +44,10 @@
       <span>Loading your collection&hellip;</span>
     </div>
     <div class="neuron-grid" id="collection-grid"></div>
-    <p class="collection-page__empty" id="empty-message" hidden>
+    <p class="tm-collection-page__empty" id="empty-message" hidden>
       Nothing saved yet. Add neurons to your collection from a search result or a neuron's detail page.
     </p>
-  </div>
+  </main>
 
   <div class="selection-tray" id="selection-tray" hidden>
     <span class="selection-tray__label" id="selection-count"></span>
@@ -53,6 +55,15 @@
     <button type="button" class="button button--danger" id="remove-selected">Remove from collection</button>
     <a class="button button--primary" id="compare-link" href="/compare.html">Compare selected</a>
   </div>
+
+  <footer class="tm-footer">
+    <p class="tm-footer__text">Powered by NeuroMorpho.Org, with data from research labs worldwide.</p>
+    <div class="tm-footer__links">
+      <a href="#">Citation Policy</a>
+      <a href="#">Terms of Use</a>
+      <a href="#">Contact Support</a>
+    </div>
+  </footer>
 
   <script type="module" src="/js/collection.js"></script>
 </body>

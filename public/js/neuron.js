@@ -4,6 +4,8 @@ import { escapeHtml } from './dom.js';
 import { NeuronViewer } from './viewer.js';
 import { createNeuronCard } from './neuronCard.js';
 import { recordVisit } from './recentlyViewed.js';
+import { getSelection, toggleSelection, clearSelection } from './compareSelection.js';
+import { buildCompareUrl } from './routes.js';
 import { buildCitationLines } from './logic/citation.js';
 import {
   IDENTIFICATION_FIELDS,
@@ -15,6 +17,7 @@ import {
 } from './logic/neuronFields.js';
 
 const requestedNeuronName = new URLSearchParams(window.location.search).get('name');
+let currentNeuron = null;
 
 // View layer: takes already-decided rows/text from the Neuron/Morphometry
 // models and logic/neuronFields.js, and writes them to the DOM. No field
@@ -44,7 +47,6 @@ function renderHeader(neuron) {
   document.title = `Arbor — ${neuron.name}`;
   document.getElementById('breadcrumb-name').textContent = neuron.name;
   document.getElementById('neuron-title').textContent = `${neuron.name} — ${neuron.cellType || 'Neuron'}`;
-  document.getElementById('neuron-domain').textContent = neuron.domain || 'Domain not reported';
   document.getElementById('neuron-subtitle').textContent = neuron.subtitle;
 }
 
@@ -55,8 +57,17 @@ function renderDownloadLinks(neuron) {
   document.getElementById('external-link').href = neuron.neuroMorphoPageUrl;
 }
 
-function renderCacheBadge(metadataFromCache) {
-  document.getElementById('cache-badge').hidden = !metadataFromCache;
+// The plain /browse.html href is only a fallback for direct/external visits.
+// If the user actually came from Browse, going back restores their exact
+// search — filters, sort, and page — instead of resetting it.
+function bindBreadcrumbBrowseLink() {
+  const breadcrumbBrowseLink = document.getElementById('breadcrumb-browse-link');
+  if (!document.referrer.includes('/browse.html')) return;
+
+  breadcrumbBrowseLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.history.back();
+  });
 }
 
 function bindCopyLinkButton() {
@@ -100,8 +111,13 @@ async function bindCollectionToggle(neuron) {
 }
 
 function bindCopyCitationButton() {
-  document.getElementById('copy-citation').addEventListener('click', () => {
-    navigator.clipboard.writeText(document.getElementById('citation-text').textContent);
+  const copyCitationButton = document.getElementById('copy-citation');
+  const originalLabel = copyCitationButton.textContent;
+
+  copyCitationButton.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(document.getElementById('citation-text').textContent);
+    copyCitationButton.innerHTML = '<img src="/assets/icons/check.svg" alt="" width="14" height="10">Copied!';
+    setTimeout(() => { copyCitationButton.textContent = originalLabel; }, 1500);
   });
 }
 
@@ -133,7 +149,7 @@ function bindViewerToolbar(viewer) {
   wireframeButton.addEventListener('click', () => {
     wireframeOn = !wireframeOn;
     viewer.setWireframe(wireframeOn);
-    wireframeButton.classList.toggle('viewer-toolbar__button--active', wireframeOn);
+    wireframeButton.classList.toggle('tm-viewer-toolbar__button--active', wireframeOn);
   });
 
   fullscreenButton.addEventListener('click', () => viewer.toggleFullscreen());
@@ -141,17 +157,54 @@ function bindViewerToolbar(viewer) {
   document.getElementById('viewer-toolbar').hidden = false;
 }
 
+// Comparing only makes sense against the neuron currently on screen, so
+// checking any similar neuron always pairs it with this one — the tray
+// reports the count of *other* neurons, but the actual comparison set
+// (built when navigating to Compare) always includes the current one too.
+function otherSelectedNames(neuron) {
+  return getSelection().filter((name) => name !== neuron.name);
+}
+
+function updateSelectionTray(neuron) {
+  const others = otherSelectedNames(neuron);
+  const compareLink = document.getElementById('compare-link');
+
+  document.getElementById('selection-tray').hidden = others.length === 0;
+  document.getElementById('selection-count').textContent = `${others.length} selected`;
+  compareLink.href = others.length > 0 ? buildCompareUrl([neuron.name, ...others]) : '/browse.html';
+  compareLink.title = others.length > 0 ? '' : 'Select at least one more neuron to compare';
+}
+
+function handleSimilarCardToggle(neuron, similarNeuronName) {
+  if (!getSelection().includes(neuron.name)) toggleSelection(neuron.name);
+  toggleSelection(similarNeuronName);
+  updateSelectionTray(neuron);
+}
+
+function bindSelectionTrayEvents(neuron) {
+  document.getElementById('clear-selection').addEventListener('click', () => {
+    clearSelection();
+    document.querySelectorAll('.neuron-card__select').forEach((checkbox) => { checkbox.checked = false; });
+    updateSelectionTray(neuron);
+  });
+}
+
 // Best-effort: the similarity service is a separate deployment from the main
 // API, so a failure here just leaves the section hidden rather than
 // breaking the rest of the page.
-async function loadSimilarNeurons(neuronName) {
+async function loadSimilarNeurons(neuron) {
   try {
-    const matches = await api.getSimilarNeurons(neuronName);
+    const matches = await api.getSimilarNeurons(neuron.name);
     if (matches.length === 0) return;
 
+    const selectedNames = new Set(getSelection());
     const grid = document.getElementById('similar-neurons-grid');
-    for (const { neuron, similarity } of matches) {
-      grid.appendChild(createNeuronCard(neuron, { note: `${Math.round(similarity * 100)}% similar` }));
+    for (const { neuron: similarNeuron, similarity } of matches) {
+      grid.appendChild(createNeuronCard(similarNeuron, {
+        note: `${Math.round(similarity * 100)}% similar`,
+        selected: selectedNames.has(similarNeuron.name),
+        onToggleSelect: (name) => handleSimilarCardToggle(neuron, name),
+      }));
     }
     document.getElementById('similar-neurons-section').hidden = false;
   } catch {
@@ -167,6 +220,7 @@ function showError(message) {
 
 async function init() {
   initCollectionBadge();
+  bindBreadcrumbBrowseLink();
   bindCopyCitationButton();
   bindCopyLinkButton();
 
@@ -177,10 +231,10 @@ async function init() {
   }
 
   try {
-    const { neuron, morphometry, metadataFromCache, literature } = await api.getNeuron(requestedNeuronName);
+    const { neuron, morphometry, literature } = await api.getNeuron(requestedNeuronName);
+    currentNeuron = neuron;
 
     renderHeader(neuron);
-    renderCacheBadge(metadataFromCache);
     renderNote(neuron);
     renderFieldList('identification-list', buildFieldRows(neuron, IDENTIFICATION_FIELDS));
     renderFieldList('organism-list', buildFieldRows(neuron, ORGANISM_FIELDS));
@@ -193,11 +247,14 @@ async function init() {
     document.getElementById('neuron-detail').hidden = false;
     recordVisit(neuron);
 
+    bindSelectionTrayEvents(neuron);
+    updateSelectionTray(neuron);
+
     await bindCollectionToggle(neuron);
     loadMorphologyViewer(neuron.name).then((viewer) => {
       if (viewer) bindViewerToolbar(viewer);
     });
-    loadSimilarNeurons(neuron.name);
+    loadSimilarNeurons(neuron);
   } catch (error) {
     document.getElementById('loading-state').hidden = true;
     showError(`Could not load ${requestedNeuronName}: ${error.message}`);
@@ -205,3 +262,11 @@ async function init() {
 }
 
 init();
+
+// A bfcache restore (e.g. clicking back from Browse or Compare) reuses the
+// frozen page as-is rather than reloading it — so it can show a stale
+// compare selection (tray visibility/count, checked similar-neuron cards)
+// left over from before you navigated away.
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted && currentNeuron) updateSelectionTray(currentNeuron);
+});
