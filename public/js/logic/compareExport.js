@@ -5,15 +5,20 @@ function escapeCsvField(value) {
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
+// Tidy layout — one row per neuron, one column per field — rather than
+// mirroring the on-screen tables (fields as rows, neurons as columns).
+// That transposed, section-header-interrupted shape isn't something
+// pandas/R/Excel can load directly; this is.
 export function buildCompareCsv(neuronNames, sections) {
-  const lines = [['Field', ...neuronNames]];
+  const fieldColumns = sections.flatMap(({ title, rows }) =>
+    rows.map((row) => ({ ...row, label: `${title}: ${row.label}` }))
+  );
 
-  for (const { title, rows } of sections) {
-    lines.push([`[${title}]`]);
-    for (const { label, values } of rows) {
-      lines.push([label, ...values]);
-    }
-  }
+  const header = ['Neuron ID', ...fieldColumns.map((column) => column.label)];
+  const dataRows = neuronNames.map((neuronName, index) => [
+    neuronName,
+    ...fieldColumns.map((column) => column.values[index]),
+  ]);
 
-  return lines.map((row) => row.map(escapeCsvField).join(',')).join('\n');
+  return [header, ...dataRows].map((row) => row.map(escapeCsvField).join(',')).join('\n');
 }

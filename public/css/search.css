@@ -27,9 +27,9 @@
 
 .tm-hero__title {
   margin: 0;
-  font-family: var(--font-tm-sans);
+  font-family: var(--font-tm-serif);
   font-weight: 700;
-  text-transform: uppercase;
+  text-transform: none;
   font-size: 48px;
   letter-spacing: -1.12px;
   color: var(--tm-midnight);

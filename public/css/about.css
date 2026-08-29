@@ -10,6 +10,17 @@
   margin-bottom: 48px;
 }
 
+.tm-about__hero .tm-about__prototype-note {
+  margin: 0 0 24px;
+  padding: 14px 16px;
+  background: var(--tm-maple);
+  border-left: 3px solid var(--tm-thunder);
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--tm-thunder);
+}
+
 .tm-about__hero h1 {
   margin: 0 0 16px;
   font-family: var(--font-tm-serif);
