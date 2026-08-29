@@ -86,6 +86,12 @@ export class NeuronViewer {
     this.scene.add(this.group);
 
     const samples = parseSwc(swcText);
+    // A truncated or otherwise garbled file parses to zero points rather
+    // than throwing, so nothing would render and the viewer would just sit
+    // there blank with no explanation. Treat that the same as a failed load.
+    if (samples.size === 0) {
+      throw new Error('SWC file has no usable morphology data.');
+    }
     this.lastSamples = samples;
     this.addBranchLines(samples);
     this.addSoma(samples);

@@ -102,14 +102,19 @@ function renderViewerColumns(comparisonEntries) {
 async function loadViewers(comparisonEntries) {
   for (const { neuron } of comparisonEntries) {
     const viewerContainer = document.getElementById(`viewer-${cssSafeId(neuron.name)}`);
+    let viewer = null;
     try {
       const swcResponse = await fetch(api.getSwcUrl(neuron.name));
       if (!swcResponse.ok) throw new Error('SWC file unavailable');
-      const viewer = new NeuronViewer(viewerContainer);
+      viewer = new NeuronViewer(viewerContainer);
       viewer.loadSwc(await swcResponse.text());
       document.getElementById(`fullscreen-${cssSafeId(neuron.name)}`)
         .addEventListener('click', () => viewer.toggleFullscreen());
     } catch {
+      // loadSwc can throw after the viewer (and its render loop) already
+      // exist, e.g. on an empty/garbled file — dispose it rather than leaving
+      // a stray canvas animating behind the error message.
+      viewer?.dispose();
       viewerContainer.textContent = 'Could not load 3D morphology.';
     }
   }

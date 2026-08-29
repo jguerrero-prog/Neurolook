@@ -120,16 +120,21 @@ function bindCopyCitationButton() {
 
 async function loadMorphologyViewer(neuronName) {
   const viewerStatus = document.getElementById('viewer-status');
+  let viewer = null;
   try {
     const swcResponse = await fetch(api.getSwcUrl(neuronName));
     if (!swcResponse.ok) throw new Error('SWC file unavailable');
     const swcText = await swcResponse.text();
 
-    const viewer = new NeuronViewer(document.getElementById('viewer-container'));
+    viewer = new NeuronViewer(document.getElementById('viewer-container'));
     viewer.loadSwc(swcText);
     viewerStatus.remove();
     return viewer;
   } catch {
+    // loadSwc can throw after the viewer (and its render loop) already
+    // exist, e.g. on an empty/garbled file — dispose it rather than leaving
+    // a stray canvas animating behind the error message.
+    viewer?.dispose();
     viewerStatus.textContent = 'Could not load the 3D morphology for this neuron.';
     return null;
   }

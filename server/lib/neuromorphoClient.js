@@ -4,8 +4,27 @@ const BASE_URL = 'https://neuromorpho.org/api';
 const SIMILARITY_BASE_URL = 'https://neuromorpho.org/similarity';
 const USER_AGENT = 'Neurolook/0.1 (local personal NeuroMorpho browser; non-commercial)';
 const REQUEST_SPACING_MS = 200;
+const REQUEST_TIMEOUT_MS = 15_000;
 
 const HOUR = 60 * 60 * 1000;
+
+// A plain fetch() has no built-in limit on how long it'll wait, so a hung
+// NeuroMorpho request would hang this server's response right along with it.
+// Mirrors the same timeout the browser-side client already applies.
+async function fetchWithTimeout(url, options) {
+  const abortController = new AbortController();
+  const timeoutId = setTimeout(() => abortController.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...options, signal: abortController.signal });
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error(`Request to ${url} timed out after ${REQUEST_TIMEOUT_MS}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 // NeuroMorpho's terms ask automated tools to space out their requests
 // instead of sending them all at once. This makes every outgoing request
@@ -29,7 +48,7 @@ async function fetchJson(path) {
   if (cached) return cached;
 
   const response = await schedule(() =>
-    fetch(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } })
+    fetchWithTimeout(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } })
   );
   if (!response.ok) {
     throw new Error(`NeuroMorpho API returned ${response.status} for ${path}`);
@@ -140,7 +159,7 @@ export async function searchNeurons(criteria, { size = 12, page = 0, sort = '' }
   if (sort) params.set('sort', sort);
 
   const response = await schedule(() =>
-    fetch(`${BASE_URL}/neuron/select?${params.toString()}`, {
+    fetchWithTimeout(`${BASE_URL}/neuron/select?${params.toString()}`, {
       headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
     })
   );
@@ -174,7 +193,7 @@ export async function getSimilarNeurons(neuronId, { usePCA = 0, count = 8, searc
   if (cached) return cached;
 
   const response = await schedule(() =>
-    fetch(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } })
+    fetchWithTimeout(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } })
   );
   if (!response.ok) {
     throw new Error(`NeuroMorpho similarity service returned ${response.status}`);
@@ -187,7 +206,7 @@ export async function getSimilarNeurons(neuronId, { usePCA = 0, count = 8, searc
 
 export async function downloadSwcFile(archive, neuronName) {
   const url = `https://neuromorpho.org/dableFiles/${archive.toLowerCase()}/CNG%20version/${neuronName}.CNG.swc`;
-  const response = await schedule(() => fetch(url, { headers: { 'User-Agent': USER_AGENT } }));
+  const response = await schedule(() => fetchWithTimeout(url, { headers: { 'User-Agent': USER_AGENT } }));
   if (!response.ok) {
     throw new Error(`Could not download SWC file for ${neuronName} (${response.status})`);
   }
