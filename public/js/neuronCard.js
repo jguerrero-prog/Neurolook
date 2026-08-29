@@ -1,51 +1,62 @@
-import { escapeHtml } from './dom.js';
+import { createElement } from './dom.js';
 import { buildNeuronDetailUrl } from './routes.js';
 
 // Renders one neuron summary card from a Neuron model instance. Used by both
 // the browse grid and the collection grid, so selection (compare checkbox)
 // and the remove action are both optional depending on which page is calling it.
 export function createNeuronCard(neuron, { selected = false, onToggleSelect, onRemove, note } = {}) {
-  const card = document.createElement('article');
-  card.className = `neuron-card${selected ? ' neuron-card--selected' : ''}`;
+  const headerChildren = [createElement('span', { className: 'neuron-card__id', text: neuron.name })];
+  if (onToggleSelect) {
+    const selectCheckbox = createElement('input', {
+      className: 'neuron-card__select',
+      attrs: { type: 'checkbox', 'aria-label': `Queue ${neuron.name} for comparison` },
+    });
+    selectCheckbox.checked = selected;
+    selectCheckbox.addEventListener('change', () => onToggleSelect(neuron.name));
+    headerChildren.push(selectCheckbox);
+  }
 
-  card.innerHTML = `
-    <div class="neuron-card__header">
-      <span class="neuron-card__id">${escapeHtml(neuron.name)}</span>
-      <input type="checkbox" class="neuron-card__select" aria-label="Queue ${escapeHtml(neuron.name)} for comparison" ${selected ? 'checked' : ''}>
-    </div>
-    <div class="neuron-card__thumb">
-      <img src="${escapeHtml(neuron.pngUrl)}" alt="Rendered morphology of ${escapeHtml(neuron.name)}" loading="lazy">
-      ${note ? `<span class="neuron-card__note">${escapeHtml(note)}</span>` : ''}
-    </div>
-    <h3 class="neuron-card__title">${escapeHtml(neuron.cellType || 'Unclassified neuron')}</h3>
-    <p class="neuron-card__meta">${escapeHtml(neuron.species)}${neuron.brainRegion ? ` &middot; ${escapeHtml(neuron.brainRegion)}` : ''}</p>
-    <div class="neuron-card__footer">
-      <a class="neuron-card__link" href="${buildNeuronDetailUrl(neuron.name)}">View details &rarr;</a>
-    </div>
-  `;
-
-  const thumbImage = card.querySelector('.neuron-card__thumb img');
+  const thumbImage = createElement('img', {
+    attrs: { src: neuron.pngUrl, alt: `Rendered morphology of ${neuron.name}`, loading: 'lazy' },
+  });
   thumbImage.addEventListener('error', () => {
-    thumbImage.replaceWith(Object.assign(document.createElement('span'), {
+    thumbImage.replaceWith(createElement('span', {
       className: 'neuron-card__thumb-fallback',
-      textContent: 'No preview image',
+      text: 'No preview image',
     }));
   });
 
-  if (onToggleSelect) {
-    card.querySelector('.neuron-card__select').addEventListener('change', () => onToggleSelect(neuron.name));
-  } else {
-    card.querySelector('.neuron-card__select').remove();
-  }
+  const metaText = neuron.brainRegion ? `${neuron.species} · ${neuron.brainRegion}` : neuron.species;
 
+  const footerChildren = [createElement('a', {
+    className: 'neuron-card__link',
+    attrs: { href: buildNeuronDetailUrl(neuron.name) },
+    text: 'View details →',
+  })];
   if (onRemove) {
-    const removeButton = document.createElement('button');
-    removeButton.type = 'button';
-    removeButton.className = 'neuron-card__remove';
-    removeButton.textContent = 'Remove';
+    const removeButton = createElement('button', {
+      className: 'neuron-card__remove',
+      attrs: { type: 'button' },
+      text: 'Remove',
+    });
     removeButton.addEventListener('click', () => onRemove(neuron.name));
-    card.querySelector('.neuron-card__footer').prepend(removeButton);
+    footerChildren.unshift(removeButton);
   }
 
-  return card;
+  return createElement('article', {
+    className: `neuron-card${selected ? ' neuron-card--selected' : ''}`,
+    children: [
+      createElement('div', { className: 'neuron-card__header', children: headerChildren }),
+      createElement('div', {
+        className: 'neuron-card__thumb',
+        children: [
+          thumbImage,
+          note ? createElement('span', { className: 'neuron-card__note', text: note }) : null,
+        ],
+      }),
+      createElement('h3', { className: 'neuron-card__title', text: neuron.cellType || 'Unclassified neuron' }),
+      createElement('p', { className: 'neuron-card__meta', text: metaText }),
+      createElement('div', { className: 'neuron-card__footer', children: footerChildren }),
+    ],
+  });
 }

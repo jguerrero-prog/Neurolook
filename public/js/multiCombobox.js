@@ -1,4 +1,4 @@
-import { escapeHtml } from './dom.js';
+import { createElement } from './dom.js';
 
 const OPEN_CLASS = 'tm-combobox--open';
 const SELECTED_CLASS = 'tm-combobox--selected';
@@ -39,30 +39,40 @@ class MultiCombobox {
   }
 
   setOptions(items, selectedValues) {
-    this.nativeContainer.innerHTML = items.map(({ value }) => `
-      <input type="checkbox" name="${this.field}" value="${escapeHtml(value)}" ${selectedValues.has(value) ? 'checked' : ''}>
-    `).join('');
+    this.nativeContainer.replaceChildren(...items.map(({ value }) => {
+      const checkbox = createElement('input', { attrs: { type: 'checkbox', name: this.field, value } });
+      checkbox.checked = selectedValues.has(value);
+      return checkbox;
+    }));
 
-    this.list.innerHTML = items.map(({ value, count }, index) => `
-      <li class="tm-combobox__option" role="option" id="${this.field}-option-${index}"
-          data-index="${index}" data-value="${escapeHtml(value)}" data-text="${escapeHtml(value.toLowerCase())}">
-        <img class="tm-multiselect__checkbox" src="/assets/icons/checkbox-unchecked.svg" alt="" width="14" height="14">
-        <span class="tm-combobox__option-label">${escapeHtml(value)}</span>
-        <span class="tm-multiselect__option-count">${count.toLocaleString()}</span>
-      </li>
-    `).join('');
+    this.list.replaceChildren(...items.map(({ value, count }, index) => {
+      const option = createElement('li', {
+        className: 'tm-combobox__option',
+        attrs: {
+          role: 'option',
+          id: `${this.field}-option-${index}`,
+          'data-index': index,
+          'data-value': value,
+          'data-text': value.toLowerCase(),
+        },
+        children: [
+          createElement('img', {
+            className: 'tm-multiselect__checkbox',
+            attrs: { src: '/assets/icons/checkbox-unchecked.svg', alt: '', width: 14, height: 14 },
+          }),
+          createElement('span', { className: 'tm-combobox__option-label', text: value }),
+          createElement('span', { className: 'tm-multiselect__option-count', text: count.toLocaleString() }),
+        ],
+      });
+      option.addEventListener('click', () => this.toggleValue(value));
+      option.addEventListener('mouseenter', () => this.setActive(index));
+      return option;
+    }));
 
-    const emptyItem = document.createElement('li');
-    emptyItem.className = 'tm-combobox__empty';
-    emptyItem.textContent = 'No matches';
+    const emptyItem = createElement('li', { className: 'tm-combobox__empty', text: 'No matches' });
     emptyItem.hidden = true;
     this.list.appendChild(emptyItem);
     this.emptyItem = emptyItem;
-
-    this.list.querySelectorAll('.tm-combobox__option').forEach((item) => {
-      item.addEventListener('click', () => this.toggleValue(item.dataset.value));
-      item.addEventListener('mouseenter', () => this.setActive(Number(item.dataset.index)));
-    });
 
     this.syncSelectedDisplay();
   }
@@ -116,16 +126,18 @@ class MultiCombobox {
       ? [...selectedValues].join(', ')
       : this.placeholder;
 
-    this.pillsContainer.innerHTML = [...selectedValues].map((value) => `
-      <button type="button" class="tm-multiselect__pill" data-value="${escapeHtml(value)}" aria-label="Remove ${escapeHtml(value)}">
-        <span class="tm-multiselect__pill-label">${escapeHtml(value)}</span>
-        <img src="/assets/icons/pill-remove.svg" alt="" width="12" height="12">
-      </button>
-    `).join('');
-
-    this.pillsContainer.querySelectorAll('.tm-multiselect__pill').forEach((pill) => {
-      pill.addEventListener('click', () => this.toggleValue(pill.dataset.value));
-    });
+    this.pillsContainer.replaceChildren(...[...selectedValues].map((value) => {
+      const pill = createElement('button', {
+        className: 'tm-multiselect__pill',
+        attrs: { type: 'button', 'data-value': value, 'aria-label': `Remove ${value}` },
+        children: [
+          createElement('span', { className: 'tm-multiselect__pill-label', text: value }),
+          createElement('img', { attrs: { src: '/assets/icons/pill-remove.svg', alt: '', width: 12, height: 12 } }),
+        ],
+      });
+      pill.addEventListener('click', () => this.toggleValue(value));
+      return pill;
+    }));
   }
 
   getOptionItems() {

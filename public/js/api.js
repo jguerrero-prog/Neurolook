@@ -6,7 +6,7 @@ const REQUEST_TIMEOUT_MS = 15_000;
 
 // The sole network client for Neurolook's own local server (never called
 // directly from view code). Every method here returns model instances, not
-// raw JSON, so widgets never see the wire format.
+// raw JSON, so widgets never have to read the server's raw field names directly.
 async function request(path, options) {
   const abortController = new AbortController();
   const timeoutId = setTimeout(() => abortController.abort(), REQUEST_TIMEOUT_MS);

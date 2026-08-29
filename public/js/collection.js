@@ -8,9 +8,9 @@ import { buildCollectionCsv } from './logic/collectionExport.js';
 
 let collectionEntries = [];
 
-// Comparing needs at least 2, so the tray (and its "Compare selected" link)
-// only ever appears once there are — nothing to guard against a 1-selected
-// state reaching Compare's error page.
+// Comparing needs at least 2, so the bar showing the selection count (and
+// its "Compare selected" link) only ever appears once there are — nothing
+// to guard against a 1-selected state reaching Compare's error page.
 function updateSelectionTray() {
   const selectedNames = getSelection();
 
@@ -24,7 +24,7 @@ function renderCollectionGrid() {
   const emptyMessage = document.getElementById('empty-message');
   const selectedNames = new Set(getSelection());
 
-  collectionGrid.innerHTML = '';
+  collectionGrid.replaceChildren();
   emptyMessage.hidden = collectionEntries.length > 0;
 
   for (const entry of collectionEntries) {
@@ -106,11 +106,13 @@ async function init() {
 
 init();
 
-// A bfcache restore (e.g. clicking back from Browse) reuses the frozen page
-// as-is rather than reloading it — so it can show a stale compare selection
-// (tray visibility/count, checked cards) left over from before you navigated
-// away. Re-rendering against the already-loaded collectionEntries brings
-// both back in sync with whatever is actually in sessionStorage right now.
+// Some browsers can bring back a page exactly as it looked when you left it
+// (for example, clicking Back from Browse) instead of reloading it from
+// scratch. That means the comparison selection shown on screen (the bar
+// showing how many neurons are selected, and which cards are checked) can
+// be left over from before you navigated away. Re-rendering against the
+// collection already loaded in memory brings the screen back in sync with
+// whatever is actually saved right now.
 window.addEventListener('pageshow', (event) => {
   if (!event.persisted) return;
   renderCollectionGrid();

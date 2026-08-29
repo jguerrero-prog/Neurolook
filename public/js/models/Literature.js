@@ -1,6 +1,6 @@
 // Wraps a raw /literature publication record so the citation logic can read
-// clean fields instead of the wire format (authors as an array, dates as
-// epoch milliseconds).
+// simple, well-named fields instead of the API's raw shape (authors listed
+// as an array, dates stored as a plain count of milliseconds since 1970).
 export class Literature {
   constructor(payload) {
     this.raw = payload;

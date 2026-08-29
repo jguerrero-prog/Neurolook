@@ -1,4 +1,4 @@
-import { escapeHtml } from './dom.js';
+import { createElement } from './dom.js';
 
 const OPEN_CLASS = 'tm-combobox--open';
 const SELECTED_CLASS = 'tm-combobox--selected';
@@ -37,25 +37,30 @@ class Combobox {
     const options = [...this.nativeSelect.options];
     const comboboxId = this.root.dataset.combobox;
 
-    this.list.innerHTML = options.map((option, index) => `
-      <li class="tm-combobox__option" role="option" id="${comboboxId}-option-${index}"
-          data-index="${index}" data-value="${escapeHtml(option.value)}" data-text="${escapeHtml(option.textContent.toLowerCase())}">
-        <span class="tm-combobox__option-label">${escapeHtml(option.textContent)}</span>
-        <img class="tm-combobox__check" src="/assets/icons/check.svg" alt="">
-      </li>
-    `).join('');
+    this.list.replaceChildren(...options.map((option, index) => {
+      const item = createElement('li', {
+        className: 'tm-combobox__option',
+        attrs: {
+          role: 'option',
+          id: `${comboboxId}-option-${index}`,
+          'data-index': index,
+          'data-value': option.value,
+          'data-text': option.textContent.toLowerCase(),
+        },
+        children: [
+          createElement('span', { className: 'tm-combobox__option-label', text: option.textContent }),
+          createElement('img', { className: 'tm-combobox__check', attrs: { src: '/assets/icons/check.svg', alt: '' } }),
+        ],
+      });
+      item.addEventListener('click', () => this.selectByIndex(index));
+      item.addEventListener('mouseenter', () => this.setActive(index));
+      return item;
+    }));
 
-    const emptyItem = document.createElement('li');
-    emptyItem.className = 'tm-combobox__empty';
-    emptyItem.textContent = 'No matches';
+    const emptyItem = createElement('li', { className: 'tm-combobox__empty', text: 'No matches' });
     emptyItem.hidden = true;
     this.list.appendChild(emptyItem);
     this.emptyItem = emptyItem;
-
-    this.list.querySelectorAll('.tm-combobox__option').forEach((item) => {
-      item.addEventListener('click', () => this.selectByIndex(Number(item.dataset.index)));
-      item.addEventListener('mouseenter', () => this.setActive(Number(item.dataset.index)));
-    });
 
     this.syncSelectedDisplay();
   }

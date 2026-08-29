@@ -1,6 +1,6 @@
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
-import { escapeHtml } from './dom.js';
+import { createElement, renderLinkifiedNote, bindCopyToClipboardButton } from './dom.js';
 import { NeuronViewer } from './viewer.js';
 import { createNeuronCard } from './neuronCard.js';
 import { recordVisit } from './recentlyViewed.js';
@@ -25,9 +25,12 @@ let currentNeuron = null;
 
 function renderFieldList(listElementId, rows) {
   const listElement = document.getElementById(listElementId);
-  listElement.innerHTML = rows
-    .map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`)
-    .join('');
+  listElement.replaceChildren(...rows.map(([label, value]) => createElement('div', {
+    children: [
+      createElement('dt', { text: label }),
+      createElement('dd', { text: value }),
+    ],
+  })));
 }
 
 // Notes can be long, free-flowing, and contain real links (a scaling-factor
@@ -39,7 +42,7 @@ function renderNote(neuron) {
     noteElement.hidden = true;
     return;
   }
-  noteElement.innerHTML = neuron.noteHtml;
+  renderLinkifiedNote(noteElement, neuron.note);
   noteElement.hidden = false;
 }
 
@@ -71,13 +74,7 @@ function bindBreadcrumbBrowseLink() {
 }
 
 function bindCopyLinkButton() {
-  const copyLinkButton = document.getElementById('copy-link');
-  copyLinkButton.addEventListener('click', async () => {
-    await navigator.clipboard.writeText(window.location.href);
-    const originalLabel = copyLinkButton.textContent;
-    copyLinkButton.textContent = 'Copied!';
-    setTimeout(() => { copyLinkButton.textContent = originalLabel; }, 1500);
-  });
+  bindCopyToClipboardButton(document.getElementById('copy-link'), () => window.location.href);
 }
 
 function renderCollectionToggleButton(collectionToggleButton, isInCollection) {
@@ -111,14 +108,14 @@ async function bindCollectionToggle(neuron) {
 }
 
 function bindCopyCitationButton() {
-  const copyCitationButton = document.getElementById('copy-citation');
-  const originalLabel = copyCitationButton.textContent;
-
-  copyCitationButton.addEventListener('click', async () => {
-    await navigator.clipboard.writeText(document.getElementById('citation-text').textContent);
-    copyCitationButton.innerHTML = '<img src="/assets/icons/check.svg" alt="" width="14" height="10">Copied!';
-    setTimeout(() => { copyCitationButton.textContent = originalLabel; }, 1500);
-  });
+  bindCopyToClipboardButton(
+    document.getElementById('copy-citation'),
+    () => document.getElementById('citation-text').textContent,
+    () => [
+      createElement('img', { attrs: { src: '/assets/icons/check.svg', alt: '', width: 14, height: 10 } }),
+      document.createTextNode('Copied!'),
+    ],
+  );
 }
 
 async function loadMorphologyViewer(neuronName) {
@@ -149,16 +146,18 @@ function bindViewerToolbar(viewer) {
 }
 
 // Comparing only makes sense against the neuron currently on screen, so
-// checking any similar neuron always pairs it with this one — the tray
-// reports the count of *other* neurons, but the actual comparison set
-// (built when navigating to Compare) always includes the current one too.
+// checking any similar neuron always pairs it with this one — the bar that
+// shows how many neurons are selected reports the count of *other* neurons,
+// but the actual comparison set (built when navigating to Compare) always
+// includes the current one too.
 function otherSelectedNames(neuron) {
   return getSelection().filter((name) => name !== neuron.name);
 }
 
 // Comparing needs at least 2 total (the current neuron plus at least one
-// other), so the tray only ever appears once that's true — nothing to guard
-// against a 1-selected state reaching Compare's error page.
+// other), so the bar showing the selection count only ever appears once
+// that's true — nothing to guard against a 1-selected state reaching
+// Compare's error page.
 function updateSelectionTray(neuron) {
   const others = otherSelectedNames(neuron);
 
@@ -256,10 +255,12 @@ async function init() {
 
 init();
 
-// A bfcache restore (e.g. clicking back from Browse or Compare) reuses the
-// frozen page as-is rather than reloading it — so it can show a stale
-// compare selection (tray visibility/count, checked similar-neuron cards)
-// left over from before you navigated away.
+// Some browsers can bring back a page exactly as it looked when you left it
+// (for example, clicking Back from Browse or Compare) instead of reloading
+// it from scratch. That means the comparison selection shown on screen (the
+// bar showing how many neurons are selected, and which similar-neuron cards
+// are checked) can be left over from before you navigated away, so it needs
+// to be refreshed here.
 window.addEventListener('pageshow', (event) => {
   if (event.persisted && currentNeuron) updateSelectionTray(currentNeuron);
 });

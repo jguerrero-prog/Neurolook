@@ -85,8 +85,8 @@ function showNoFilterMessage() {
   document.getElementById('loading-state').hidden = true;
   document.getElementById('no-results-message').hidden = true;
   document.getElementById('view-toggle').hidden = true;
-  document.getElementById('results-grid').innerHTML = '';
-  document.getElementById('pagination').innerHTML = '';
+  document.getElementById('results-grid').replaceChildren();
+  document.getElementById('pagination').replaceChildren();
   document.getElementById('result-count').textContent = '';
   document.getElementById('no-filter-message').hidden = false;
 }
@@ -250,7 +250,7 @@ function appendEllipsis(paginationNav) {
 
 function renderPaginationNav(currentPage, totalPages) {
   const paginationNav = document.getElementById('pagination');
-  paginationNav.innerHTML = '';
+  paginationNav.replaceChildren();
 
   const { pages, hasPrevious, hasNext, showFirstPageLink, showLastPageLink } = buildPageWindow(currentPage, totalPages);
   const hrefForPage = (page) => {
@@ -282,9 +282,9 @@ function renderPaginationNav(currentPage, totalPages) {
   }
 }
 
-// Comparing needs at least 2, so the tray (and its "Compare selected" link)
-// only ever appears once there are — nothing to guard against a 1-selected
-// state reaching Compare's error page.
+// Comparing needs at least 2, so the bar showing the selection count (and
+// its "Compare selected" link) only ever appears once there are — nothing
+// to guard against a 1-selected state reaching Compare's error page.
 function updateSelectionTray() {
   const selectedNames = getSelection();
 
@@ -340,7 +340,7 @@ async function runSearch() {
   document.getElementById('view-toggle').hidden = totalElements === 0;
 
   const selectedNames = new Set(getSelection());
-  resultsGrid.innerHTML = '';
+  resultsGrid.replaceChildren();
   for (const neuron of neurons) {
     resultsGrid.appendChild(createNeuronCard(neuron, {
       selected: selectedNames.has(neuron.name),
@@ -386,12 +386,15 @@ async function init() {
 
 init();
 
-// A bfcache restore (e.g. clicking back from a neuron's detail page, or from
-// Collection) reuses the frozen page as-is rather than reloading it — so it
-// can show a stale compare selection (tray visibility/count, checked cards)
-// left over from before you navigated away. Re-running both brings them back
-// in sync with whatever is actually in sessionStorage right now. Safe to
-// call again: neither does anything beyond replacing existing DOM content.
+// Some browsers can bring back a page exactly as it looked when you left it
+// (for example, clicking Back from a neuron's detail page, or from
+// Collection) instead of reloading it from scratch. That means the
+// comparison selection shown on screen (the bar showing how many neurons
+// are selected, and which cards are checked) can be left over from before
+// you navigated away. Re-running both
+// functions below brings the screen back in sync with whatever is actually
+// saved right now. Safe to call again: neither one does anything beyond
+// replacing what's already on screen.
 window.addEventListener('pageshow', (event) => {
   if (!event.persisted) return;
   runSearch();

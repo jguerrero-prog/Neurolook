@@ -1,6 +1,6 @@
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
-import { escapeHtml } from './dom.js';
+import { createElement } from './dom.js';
 import { buildNeuronDetailUrl } from './routes.js';
 import { getRecentlyViewed } from './recentlyViewed.js';
 import { initCombobox } from './combobox.js';
@@ -39,15 +39,23 @@ function renderRecentlyViewed() {
   if (recentNeurons.length === 0) return;
 
   const listElement = document.getElementById('recently-viewed-list');
-  listElement.innerHTML = recentNeurons.map((entry) => `
-    <a class="tm-recently-viewed-card" href="${buildNeuronDetailUrl(entry.name)}">
-      <div class="tm-recently-viewed-card__thumb"><img src="${escapeHtml(entry.pngUrl)}" alt="" loading="lazy"></div>
-      <div class="tm-recently-viewed-card__body">
-        <div class="tm-recently-viewed-card__title">${escapeHtml(entry.cellType || entry.name)}</div>
-        <div class="tm-recently-viewed-card__meta">${escapeHtml(entry.species)}</div>
-      </div>
-    </a>
-  `).join('');
+  listElement.replaceChildren(...recentNeurons.map((entry) => createElement('a', {
+    className: 'tm-recently-viewed-card',
+    attrs: { href: buildNeuronDetailUrl(entry.name) },
+    children: [
+      createElement('div', {
+        className: 'tm-recently-viewed-card__thumb',
+        children: [createElement('img', { attrs: { src: entry.pngUrl, alt: '', loading: 'lazy' } })],
+      }),
+      createElement('div', {
+        className: 'tm-recently-viewed-card__body',
+        children: [
+          createElement('div', { className: 'tm-recently-viewed-card__title', text: entry.cellType || entry.name }),
+          createElement('div', { className: 'tm-recently-viewed-card__meta', text: entry.species }),
+        ],
+      }),
+    ],
+  })));
   document.getElementById('recently-viewed-section').hidden = false;
 }
 

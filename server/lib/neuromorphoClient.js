@@ -7,9 +7,11 @@ const REQUEST_SPACING_MS = 200;
 
 const HOUR = 60 * 60 * 1000;
 
-// NeuroMorpho's terms ask API clients to throttle programmatic queries.
-// This chains every outgoing request onto the previous one with a fixed gap,
-// so Neurolook never fires requests in a burst regardless of how many pages load at once.
+// NeuroMorpho's terms ask automated tools to space out their requests
+// instead of sending them all at once. This makes every outgoing request
+// wait for the one before it to finish, with a fixed pause in between, so
+// Neurolook never sends a burst of requests no matter how many pages are
+// loading at once.
 let requestQueue = Promise.resolve();
 
 function schedule(task) {
@@ -163,8 +165,9 @@ export async function searchNeurons(criteria, { size = 12, page = 0, sort = '' }
 
 // NeuroMorpho's similarity-search service (github.com/NeuroMorpho/similarity-search),
 // deployed live at neuromorpho.org/similarity — a separate service from the
-// main REST API, documented in that repo's README rather than apiReference.html.
-// searchType: 0 = FAISS, 1 = Pearson correlation, 2 = both combined.
+// main API, documented in that repo's README rather than apiReference.html.
+// searchType: 0 = fast approximate shape matching, 1 = direct statistical
+// shape comparison, 2 = both combined.
 export async function getSimilarNeurons(neuronId, { usePCA = 0, count = 8, searchType = 1 } = {}) {
   const url = `${SIMILARITY_BASE_URL}/similarNeurons/${usePCA}/${neuronId}/${count}/${searchType}`;
   const cached = await getCached(url);

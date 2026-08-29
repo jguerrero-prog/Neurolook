@@ -1,4 +1,4 @@
-import { joinField, linkifyRestrictedHtml } from '../dom.js';
+import { joinField } from '../dom.js';
 
 // Wraps a raw NeuroMorpho neuron JSON payload — or the smaller subset stored
 // in the local collection file — so widgets never read raw API field names
@@ -14,7 +14,6 @@ export class Neuron {
   get name() { return this.raw.neuron_name; }
   get archive() { return this.raw.archive; }
   get note() { return this.raw.note; }
-  get noteHtml() { return linkifyRestrictedHtml(this.raw.note); }
 
   get species() { return this.raw.species; }
   get scientificName() { return this.raw.scientific_name; }
