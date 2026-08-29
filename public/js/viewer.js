@@ -23,10 +23,6 @@ const SOMA_TYPE = 1;
 export class NeuronViewer {
   constructor(container) {
     this.container = container;
-    this.wireframeOn = false;
-    // Set by the caller to sync a toolbar button's visual state, since
-    // wireframe can also be toggled here via the keyboard shortcut.
-    this.onWireframeChange = null;
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x000000);
@@ -49,9 +45,9 @@ export class NeuronViewer {
     this.animate();
   }
 
-  // R/W/F for reset/wireframe/fullscreen — only fires while this specific
-  // viewer has focus, so multiple viewers on the Compare page don't fight
-  // over the same keys. Interacting with the canvas (drag/click) focuses it.
+  // R/F for reset/fullscreen — only fires while this specific viewer has
+  // focus, so multiple viewers on the Compare page don't fight over the
+  // same keys. Interacting with the canvas (drag/click) focuses it.
   bindKeyboardShortcuts() {
     this.container.tabIndex = 0;
     this.container.addEventListener('pointerdown', () => this.container.focus());
@@ -59,9 +55,6 @@ export class NeuronViewer {
       switch (event.key.toLowerCase()) {
         case 'r':
           this.resetView();
-          break;
-        case 'w':
-          this.toggleWireframe();
           break;
         case 'f':
           this.toggleFullscreen();
@@ -91,7 +84,6 @@ export class NeuronViewer {
     if (this.group) this.scene.remove(this.group);
     this.group = new THREE.Group();
     this.scene.add(this.group);
-    this.somaMesh = null;
 
     const samples = parseSwc(swcText);
     this.lastSamples = samples;
@@ -125,9 +117,9 @@ export class NeuronViewer {
 
     const geometry = new THREE.SphereGeometry(Math.max(soma.radius, 2), 16, 16);
     const material = new THREE.MeshBasicMaterial({ color: COLOR_BY_TYPE[SOMA_TYPE] });
-    this.somaMesh = new THREE.Mesh(geometry, material);
-    this.somaMesh.position.set(soma.x, soma.y, soma.z);
-    this.group.add(this.somaMesh);
+    const somaMesh = new THREE.Mesh(geometry, material);
+    somaMesh.position.set(soma.x, soma.y, soma.z);
+    this.group.add(somaMesh);
   }
 
   frameCamera(samples) {
@@ -146,18 +138,6 @@ export class NeuronViewer {
   // Re-frames the camera on the current morphology, undoing any rotate/pan/zoom.
   resetView() {
     if (this.lastSamples) this.frameCamera(this.lastSamples);
-  }
-
-  // Wireframe only has a visible effect on the soma mesh — the branches are
-  // already rendered as line segments, not solid geometry.
-  setWireframe(enabled) {
-    this.wireframeOn = enabled;
-    if (this.somaMesh) this.somaMesh.material.wireframe = enabled;
-    if (this.onWireframeChange) this.onWireframeChange(enabled);
-  }
-
-  toggleWireframe() {
-    this.setWireframe(!this.wireframeOn);
   }
 
   toggleFullscreen() {

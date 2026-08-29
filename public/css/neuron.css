@@ -186,11 +186,6 @@
   background: var(--tm-platinum);
 }
 
-.tm-viewer-toolbar__button--active {
-  background: var(--tm-azalea);
-  color: var(--tm-cardinal);
-}
-
 .tm-neuron-viewer__status {
   position: absolute;
   inset: 0;

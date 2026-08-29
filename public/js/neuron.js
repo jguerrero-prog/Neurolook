@@ -140,18 +140,10 @@ async function loadMorphologyViewer(neuronName) {
 
 function bindViewerToolbar(viewer) {
   const resetButton = document.getElementById('viewer-reset');
-  const wireframeButton = document.getElementById('viewer-wireframe');
   const fullscreenButton = document.getElementById('viewer-fullscreen');
 
   resetButton.addEventListener('click', () => viewer.resetView());
-  wireframeButton.addEventListener('click', () => viewer.toggleWireframe());
   fullscreenButton.addEventListener('click', () => viewer.toggleFullscreen());
-
-  // Keeps the button's active state in sync even when wireframe is toggled
-  // via the keyboard shortcut instead of this button.
-  viewer.onWireframeChange = (enabled) => {
-    wireframeButton.classList.toggle('tm-viewer-toolbar__button--active', enabled);
-  };
 
   document.getElementById('viewer-toolbar').hidden = false;
 }
