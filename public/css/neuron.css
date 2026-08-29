@@ -334,3 +334,17 @@
   line-height: 1.6;
   color: var(--tm-thunder);
 }
+
+.tm-citation-sources {
+  margin: -6px 0 12px;
+  font-size: 12px;
+}
+
+.tm-citation-sources a {
+  color: var(--tm-cardinal);
+  text-decoration: none;
+}
+
+.tm-citation-sources a:hover {
+  text-decoration: underline;
+}

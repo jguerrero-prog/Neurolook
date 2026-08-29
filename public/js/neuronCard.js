@@ -1,6 +1,24 @@
 import { createElement } from './dom.js';
 import { buildNeuronDetailUrl } from './routes.js';
 
+function createThumbFallback() {
+  return createElement('span', { className: 'neuron-card__thumb-fallback', text: 'No preview image' });
+}
+
+// NeuroMorpho hasn't rendered a thumbnail for every neuron (recently
+// deposited records especially) — pngUrl is simply null for those, rather
+// than a broken link. Skip straight to the fallback instead of creating an
+// <img> with no src, which would show its alt text as if it were content.
+function createThumbnail(neuron) {
+  if (!neuron.pngUrl) return createThumbFallback();
+
+  const thumbImage = createElement('img', {
+    attrs: { src: neuron.pngUrl, alt: `Rendered morphology of ${neuron.name}`, loading: 'lazy' },
+  });
+  thumbImage.addEventListener('error', () => thumbImage.replaceWith(createThumbFallback()));
+  return thumbImage;
+}
+
 // Renders one neuron summary card from a Neuron model instance. Used by both
 // the browse grid and the collection grid, so selection (compare checkbox)
 // and the remove action are both optional depending on which page is calling it.
@@ -16,15 +34,7 @@ export function createNeuronCard(neuron, { selected = false, onToggleSelect, onR
     headerChildren.push(selectCheckbox);
   }
 
-  const thumbImage = createElement('img', {
-    attrs: { src: neuron.pngUrl, alt: `Rendered morphology of ${neuron.name}`, loading: 'lazy' },
-  });
-  thumbImage.addEventListener('error', () => {
-    thumbImage.replaceWith(createElement('span', {
-      className: 'neuron-card__thumb-fallback',
-      text: 'No preview image',
-    }));
-  });
+  const thumbContent = createThumbnail(neuron);
 
   const metaText = neuron.brainRegion ? `${neuron.species} · ${neuron.brainRegion}` : neuron.species;
 
@@ -50,7 +60,7 @@ export function createNeuronCard(neuron, { selected = false, onToggleSelect, onR
       createElement('div', {
         className: 'neuron-card__thumb',
         children: [
-          thumbImage,
+          thumbContent,
           note ? createElement('span', { className: 'neuron-card__note', text: note }) : null,
         ],
       }),

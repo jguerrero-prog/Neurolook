@@ -160,6 +160,19 @@ function bindCopyLinkButton() {
   bindCopyToClipboardButton(document.getElementById('copy-link'), () => window.location.href);
 }
 
+// The plain /browse.html href is only a fallback for direct/external visits.
+// If the user actually came from Browse, going back restores their exact
+// search — filters, sort, and page — instead of resetting it.
+function bindBreadcrumbBrowseLink() {
+  const breadcrumbBrowseLink = document.getElementById('breadcrumb-browse-link');
+  if (!document.referrer.includes('/browse.html')) return;
+
+  breadcrumbBrowseLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    window.history.back();
+  });
+}
+
 function bindExportCsvButton(neuronNames, sections) {
   document.getElementById('export-csv').addEventListener('click', () => {
     const csvText = buildCompareCsv(neuronNames, sections);
@@ -177,6 +190,7 @@ function bindExportCsvButton(neuronNames, sections) {
 async function init() {
   initCollectionBadge();
   bindCopyLinkButton();
+  bindBreadcrumbBrowseLink();
 
   if (requestedNeuronNames.length < 2) {
     document.getElementById('loading-state').hidden = true;

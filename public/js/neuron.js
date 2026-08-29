@@ -46,6 +46,27 @@ function renderNote(neuron) {
   noteElement.hidden = false;
 }
 
+// One link per resolved publication (a doi.org or pubmed.ncbi.nlm.nih.gov
+// URL) — kept separate from the copyable citation text above it, so
+// copying the citation still yields a clean academic reference rather than
+// a pasted-in hyperlink.
+function renderCitationSources(sources) {
+  const sourcesElement = document.getElementById('citation-sources');
+  if (sources.length === 0) {
+    sourcesElement.hidden = true;
+    return;
+  }
+
+  sourcesElement.replaceChildren(...sources.map(({ label, url }, index) => {
+    const link = createElement('a', {
+      attrs: { href: url, target: '_blank', rel: 'noopener noreferrer' },
+      text: label,
+    });
+    return index === 0 ? link : createElement('span', { children: [document.createTextNode('  ·  '), link] });
+  }));
+  sourcesElement.hidden = false;
+}
+
 function renderHeader(neuron) {
   document.title = `Neurolook — ${neuron.name}`;
   document.getElementById('breadcrumb-name').textContent = neuron.name;
@@ -238,7 +259,9 @@ async function init() {
     renderFieldList('anatomical-list', buildFieldRows(neuron, ANATOMICAL_FIELDS));
     renderFieldList('experimental-list', buildFieldRows(neuron, EXPERIMENTAL_FIELDS));
     renderFieldList('morphometry-list', buildMorphometryRows(morphometry));
-    document.getElementById('citation-text').textContent = buildCitationLines(neuron, literature).join(' ');
+    const citation = buildCitationLines(neuron, literature);
+    document.getElementById('citation-text').textContent = citation.lines.join(' ');
+    renderCitationSources(citation.sources);
     renderDownloadLinks(neuron);
     document.getElementById('loading-state').hidden = true;
     document.getElementById('neuron-detail').hidden = false;
