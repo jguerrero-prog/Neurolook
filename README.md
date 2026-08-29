@@ -6,11 +6,14 @@ Built against the [NeuroMorpho.Org REST API](https://neuromorpho.org/apiReferenc
 
 ## Running it
 
-```
-npm start
-```
+Requires Node 20+ (uses native `fetch`, no other dependencies to install).
 
-Then open `http://localhost:4310`. Requires Node 20+ (uses native `fetch`, no other dependencies).
+1. Get this repository onto your machine (clone it, or download and unzip it), then open a terminal **inside that project folder** — `npm start` only works from there, since that's where `package.json` lives.
+2. Run:
+   ```
+   npm start
+   ```
+3. Open `http://localhost:4310` in your browser. The server doesn't open it for you — running `npm start` just starts it in the terminal; you have to visit the address yourself.
 
 ## Structure
 
@@ -40,7 +43,3 @@ Then open `http://localhost:4310`. Requires Node 20+ (uses native `fetch`, no ot
 - "Original format" downloads are not offered — NeuroMorpho's terms note
   those are currently suspended; only the standardized `.CNG.swc` format is
   fetched, which their terms explicitly permit direct HTTP access to.
-
-## Status
-
-All five screens (Search, Browse, Neuron Detail, Compare, My Collection) are wired to the live API. Not yet tested end-to-end in a real browser session.
