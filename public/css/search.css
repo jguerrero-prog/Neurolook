@@ -58,6 +58,34 @@
   width: 720px;
 }
 
+/* The Search button lives inside the pill itself here, rather than as a
+   separate element next to it (still true on Browse's own search bar), so
+   the input and button read as one field instead of two, and the whole bar
+   takes up less horizontal space. */
+.tm-search-bar--with-button {
+  padding-right: 0;
+}
+
+.tm-search-bar__submit {
+  align-self: stretch;
+  margin: -16px -16px -16px 0;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tm-thunder);
+  color: var(--tm-white);
+  border: none;
+  border-radius: 0 3px 3px 0;
+  font-family: var(--font-tm-sans);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: normal;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* Filter pills, combobox, and the shared chevron icon live in
    transmitter-shared.css since Browse reuses them too. */
 
