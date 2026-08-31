@@ -18,7 +18,7 @@ async function fetchWithTimeout(url, options) {
     return await fetch(url, { ...options, signal: abortController.signal });
   } catch (error) {
     if (error.name === 'AbortError') {
-      throw new Error(`Request to ${url} timed out after ${REQUEST_TIMEOUT_MS}ms`);
+      throw new Error(`Request to ${url} timed out after ${REQUEST_TIMEOUT_MS}ms`, { cause: error });
     }
     throw error;
   } finally {
@@ -37,7 +37,7 @@ function schedule(task) {
   const result = requestQueue.then(task);
   requestQueue = result.then(
     () => new Promise((resolve) => setTimeout(resolve, REQUEST_SPACING_MS)),
-    () => new Promise((resolve) => setTimeout(resolve, REQUEST_SPACING_MS))
+    () => new Promise((resolve) => setTimeout(resolve, REQUEST_SPACING_MS)),
   );
   return result;
 }
@@ -48,7 +48,7 @@ async function fetchJson(path) {
   if (cached) return cached;
 
   const response = await schedule(() =>
-    fetchWithTimeout(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } })
+    fetchWithTimeout(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } }),
   );
   if (!response.ok) {
     throw new Error(`NeuroMorpho API returned ${response.status} for ${path}`);
@@ -161,7 +161,7 @@ export async function searchNeurons(criteria, { size = 12, page = 0, sort = '' }
   const response = await schedule(() =>
     fetchWithTimeout(`${BASE_URL}/neuron/select?${params.toString()}`, {
       headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-    })
+    }),
   );
 
   // The API returns 404 both for a malformed query and for a well-formed
@@ -193,7 +193,7 @@ export async function getSimilarNeurons(neuronId, { usePCA = 0, count = 8, searc
   if (cached) return cached;
 
   const response = await schedule(() =>
-    fetchWithTimeout(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } })
+    fetchWithTimeout(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } }),
   );
   if (!response.ok) {
     throw new Error(`NeuroMorpho similarity service returned ${response.status}`);

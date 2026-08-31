@@ -8,8 +8,9 @@ export function summarizeCollection(items) {
     total,
     cachedCount,
     metadataOnlyCount: total - cachedCount,
-    summaryText: total === 0
-      ? ''
-      : `${total} neuron${total === 1 ? '' : 's'} saved locally · ${cachedCount} cached offline, ${total - cachedCount} metadata only`,
+    summaryText:
+      total === 0
+        ? ''
+        : `${total} neuron${total === 1 ? '' : 's'} saved locally · ${cachedCount} cached offline, ${total - cachedCount} metadata only`,
   };
 }

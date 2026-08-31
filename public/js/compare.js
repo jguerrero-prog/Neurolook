@@ -93,10 +93,12 @@ function createViewerColumn(neuron, otherNames) {
 
 function renderViewerColumns(comparisonEntries) {
   const viewersGrid = document.getElementById('compare-viewers');
-  viewersGrid.replaceChildren(...comparisonEntries.map(({ neuron }) => {
-    const otherNames = comparisonEntries.map((entry) => entry.neuron.name).filter((name) => name !== neuron.name);
-    return createViewerColumn(neuron, otherNames);
-  }));
+  viewersGrid.replaceChildren(
+    ...comparisonEntries.map(({ neuron }) => {
+      const otherNames = comparisonEntries.map((entry) => entry.neuron.name).filter((name) => name !== neuron.name);
+      return createViewerColumn(neuron, otherNames);
+    }),
+  );
 }
 
 async function loadViewers(comparisonEntries) {
@@ -108,7 +110,8 @@ async function loadViewers(comparisonEntries) {
       if (!swcResponse.ok) throw new Error('SWC file unavailable');
       viewer = new NeuronViewer(viewerContainer);
       viewer.loadSwc(await swcResponse.text());
-      document.getElementById(`fullscreen-${cssSafeId(neuron.name)}`)
+      document
+        .getElementById(`fullscreen-${cssSafeId(neuron.name)}`)
         .addEventListener('click', () => viewer.toggleFullscreen());
     } catch {
       // loadSwc can throw after the viewer (and its render loop) already
@@ -205,10 +208,26 @@ async function init() {
     const neuronNamesRow = neurons.map((neuron) => neuron.name);
 
     const sections = [
-      { title: 'Organism & Strain', containerId: 'organism-table', rows: buildFieldComparisonRows(neurons, ORGANISM_FIELDS) },
-      { title: 'Anatomical Classification', containerId: 'anatomical-table', rows: buildFieldComparisonRows(neurons, ANATOMICAL_FIELDS) },
-      { title: 'Experimental Details', containerId: 'experimental-table', rows: buildFieldComparisonRows(neurons, EXPERIMENTAL_FIELDS) },
-      { title: 'Morphometric Data', containerId: 'morphometry-table', rows: buildMorphometryComparisonRows(morphometryRecords) },
+      {
+        title: 'Organism & Strain',
+        containerId: 'organism-table',
+        rows: buildFieldComparisonRows(neurons, ORGANISM_FIELDS),
+      },
+      {
+        title: 'Anatomical Classification',
+        containerId: 'anatomical-table',
+        rows: buildFieldComparisonRows(neurons, ANATOMICAL_FIELDS),
+      },
+      {
+        title: 'Experimental Details',
+        containerId: 'experimental-table',
+        rows: buildFieldComparisonRows(neurons, EXPERIMENTAL_FIELDS),
+      },
+      {
+        title: 'Morphometric Data',
+        containerId: 'morphometry-table',
+        rows: buildMorphometryComparisonRows(morphometryRecords),
+      },
     ];
 
     document.getElementById('compare-heading').textContent = `Comparing ${comparisonEntries.length} neurons`;

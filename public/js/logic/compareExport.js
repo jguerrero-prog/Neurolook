@@ -11,7 +11,7 @@ function escapeCsvField(value) {
 // pandas/R/Excel can load directly; this is.
 export function buildCompareCsv(neuronNames, sections) {
   const fieldColumns = sections.flatMap(({ title, rows }) =>
-    rows.map((row) => ({ ...row, label: `${title}: ${row.label}` }))
+    rows.map((row) => ({ ...row, label: `${title}: ${row.label}` })),
   );
 
   const header = ['Neuron ID', ...fieldColumns.map((column) => column.label)];

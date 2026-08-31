@@ -1,0 +1,10 @@
+node_modules/
+data/
+
+# These files use one-line getters on purpose (for example, `get id() { return this.raw.neuron_id; }`),
+# one field mapping per line, so a whole model class reads as one flat, easy to scan list.
+# Prettier always expands a one-line function body into three lines, and there is no
+# setting to turn that off, so these three files are excluded to keep that style.
+public/js/models/Neuron.js
+public/js/models/Morphometry.js
+public/js/models/Literature.js

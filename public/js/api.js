@@ -20,7 +20,7 @@ async function request(path, options) {
     return payload;
   } catch (error) {
     if (error.name === 'AbortError') {
-      throw new Error('The request timed out. Check your connection and try again.');
+      throw new Error('The request timed out. Check your connection and try again.', { cause: error });
     }
     throw error;
   } finally {

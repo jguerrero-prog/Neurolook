@@ -1,7 +1,7 @@
 // Several NeuroMorpho fields (brain_region, cell_type) are arrays of tags
 // rather than a single string; this renders either shape as one readable line.
 export function joinField(value) {
-  return Array.isArray(value) ? value.join(', ') : value ?? '';
+  return Array.isArray(value) ? value.join(', ') : (value ?? '');
 }
 
 // Builds one element without ever touching innerHTML — text goes through
@@ -35,12 +35,18 @@ const COPIED_FEEDBACK_DURATION_MS = 1500;
 // swapping its label to a confirmation for a moment before restoring
 // whatever it displayed before. `buildConfirmation` returns the replacement
 // child nodes — override it to show an icon alongside the text.
-export function bindCopyToClipboardButton(button, getText, buildConfirmation = () => [document.createTextNode('Copied!')]) {
+export function bindCopyToClipboardButton(
+  button,
+  getText,
+  buildConfirmation = () => [document.createTextNode('Copied!')],
+) {
   const originalLabel = button.textContent;
   button.addEventListener('click', async () => {
     await navigator.clipboard.writeText(getText());
     button.replaceChildren(...buildConfirmation());
-    setTimeout(() => { button.textContent = originalLabel; }, COPIED_FEEDBACK_DURATION_MS);
+    setTimeout(() => {
+      button.textContent = originalLabel;
+    }, COPIED_FEEDBACK_DURATION_MS);
   });
 }
 
@@ -68,10 +74,12 @@ export function renderLinkifiedNote(container, text) {
     if (match.index > lastIndex) {
       container.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
     }
-    container.appendChild(createElement('a', {
-      attrs: { href: resolveNeuroMorphoHref(href), target: '_blank', rel: 'noopener noreferrer' },
-      text: linkText,
-    }));
+    container.appendChild(
+      createElement('a', {
+        attrs: { href: resolveNeuroMorphoHref(href), target: '_blank', rel: 'noopener noreferrer' },
+        text: linkText,
+      }),
+    );
     lastIndex = match.index + fullMatch.length;
   }
   if (lastIndex < text.length) {

@@ -9,13 +9,14 @@
 // reference id can be one of NeuroMorpho's internal placeholder numbers,
 // which isn't a real, dereferenceable identifier and would be a dead link.
 export function buildCitationLines(neuron, literatureEntries) {
-  const publicationLines = literatureEntries.length > 0
-    ? literatureEntries.map((entry) => entry.citationLine)
-    : [
-        neuron.referencePubmedIds.length > 0
-          ? `See the original publication(s): PMID ${neuron.referencePubmedIds.join(', ')}.`
-          : 'Original publication not linked in the database record.',
-      ];
+  const publicationLines =
+    literatureEntries.length > 0
+      ? literatureEntries.map((entry) => entry.citationLine)
+      : [
+          neuron.referencePubmedIds.length > 0
+            ? `See the original publication(s): PMID ${neuron.referencePubmedIds.join(', ')}.`
+            : 'Original publication not linked in the database record.',
+        ];
 
   const sources = literatureEntries
     .filter((entry) => entry.sourceUrl)

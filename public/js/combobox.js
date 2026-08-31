@@ -37,25 +37,30 @@ class Combobox {
     const options = [...this.nativeSelect.options];
     const comboboxId = this.root.dataset.combobox;
 
-    this.list.replaceChildren(...options.map((option, index) => {
-      const item = createElement('li', {
-        className: 'tm-combobox__option',
-        attrs: {
-          role: 'option',
-          id: `${comboboxId}-option-${index}`,
-          'data-index': index,
-          'data-value': option.value,
-          'data-text': option.textContent.toLowerCase(),
-        },
-        children: [
-          createElement('span', { className: 'tm-combobox__option-label', text: option.textContent }),
-          createElement('img', { className: 'tm-combobox__check', attrs: { src: '/assets/icons/check.svg', alt: '' } }),
-        ],
-      });
-      item.addEventListener('click', () => this.selectByIndex(index));
-      item.addEventListener('mouseenter', () => this.setActive(index));
-      return item;
-    }));
+    this.list.replaceChildren(
+      ...options.map((option, index) => {
+        const item = createElement('li', {
+          className: 'tm-combobox__option',
+          attrs: {
+            role: 'option',
+            id: `${comboboxId}-option-${index}`,
+            'data-index': index,
+            'data-value': option.value,
+            'data-text': option.textContent.toLowerCase(),
+          },
+          children: [
+            createElement('span', { className: 'tm-combobox__option-label', text: option.textContent }),
+            createElement('img', {
+              className: 'tm-combobox__check',
+              attrs: { src: '/assets/icons/check.svg', alt: '' },
+            }),
+          ],
+        });
+        item.addEventListener('click', () => this.selectByIndex(index));
+        item.addEventListener('mouseenter', () => this.setActive(index));
+        return item;
+      }),
+    );
 
     const emptyItem = createElement('li', { className: 'tm-combobox__empty', text: 'No matches' });
     emptyItem.hidden = true;

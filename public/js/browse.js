@@ -250,10 +250,12 @@ function appendPageLink(paginationNav, page, hrefForPage, ariaLabel) {
 }
 
 function appendEllipsis(paginationNav) {
-  paginationNav.appendChild(Object.assign(document.createElement('span'), {
-    className: 'pagination__ellipsis',
-    textContent: '…',
-  }));
+  paginationNav.appendChild(
+    Object.assign(document.createElement('span'), {
+      className: 'pagination__ellipsis',
+      textContent: '…',
+    }),
+  );
 }
 
 function renderPaginationNav(currentPage, totalPages) {
@@ -268,7 +270,9 @@ function renderPaginationNav(currentPage, totalPages) {
   };
 
   if (hasPrevious) {
-    paginationNav.appendChild(Object.assign(document.createElement('a'), { href: hrefForPage(currentPage - 1), textContent: '‹' }));
+    paginationNav.appendChild(
+      Object.assign(document.createElement('a'), { href: hrefForPage(currentPage - 1), textContent: '‹' }),
+    );
   }
   if (showFirstPageLink) {
     appendPageLink(paginationNav, 0, hrefForPage, 'Go to first page, page 1');
@@ -286,7 +290,9 @@ function renderPaginationNav(currentPage, totalPages) {
     appendPageLink(paginationNav, totalPages - 1, hrefForPage, `Go to last page, page ${totalPages}`);
   }
   if (hasNext) {
-    paginationNav.appendChild(Object.assign(document.createElement('a'), { href: hrefForPage(currentPage + 1), textContent: '›' }));
+    paginationNav.appendChild(
+      Object.assign(document.createElement('a'), { href: hrefForPage(currentPage + 1), textContent: '›' }),
+    );
   }
 }
 
@@ -308,7 +314,9 @@ function handleCardSelectToggle(neuronName) {
 
 function handleClearSelectionClick() {
   clearSelection();
-  document.querySelectorAll('.neuron-card__select').forEach((checkbox) => { checkbox.checked = false; });
+  document.querySelectorAll('.neuron-card__select').forEach((checkbox) => {
+    checkbox.checked = false;
+  });
   updateSelectionTray();
 }
 
@@ -411,13 +419,20 @@ async function runSearch() {
   const selectedNames = new Set(getSelection());
   resultsGrid.replaceChildren();
   for (const neuron of neurons) {
-    resultsGrid.appendChild(createNeuronCard(neuron, {
-      selected: selectedNames.has(neuron.name),
-      onToggleSelect: handleCardSelectToggle,
-    }));
+    resultsGrid.appendChild(
+      createNeuronCard(neuron, {
+        selected: selectedNames.has(neuron.name),
+        onToggleSelect: handleCardSelectToggle,
+      }),
+    );
   }
 
-  document.getElementById('result-count').textContent = buildResultRangeLabel(currentPage, PAGE_SIZE, neurons.length, totalElements);
+  document.getElementById('result-count').textContent = buildResultRangeLabel(
+    currentPage,
+    PAGE_SIZE,
+    neurons.length,
+    totalElements,
+  );
   renderPaginationNav(currentPage, totalPages);
 }
 

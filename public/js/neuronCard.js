@@ -38,11 +38,13 @@ export function createNeuronCard(neuron, { selected = false, onToggleSelect, onR
 
   const metaText = neuron.brainRegion ? `${neuron.species} · ${neuron.brainRegion}` : neuron.species;
 
-  const footerChildren = [createElement('a', {
-    className: 'neuron-card__link',
-    attrs: { href: buildNeuronDetailUrl(neuron.name) },
-    text: 'View details →',
-  })];
+  const footerChildren = [
+    createElement('a', {
+      className: 'neuron-card__link',
+      attrs: { href: buildNeuronDetailUrl(neuron.name) },
+      text: 'View details →',
+    }),
+  ];
   if (onRemove) {
     const removeButton = createElement('button', {
       className: 'neuron-card__remove',
@@ -59,10 +61,7 @@ export function createNeuronCard(neuron, { selected = false, onToggleSelect, onR
       createElement('div', { className: 'neuron-card__header', children: headerChildren }),
       createElement('div', {
         className: 'neuron-card__thumb',
-        children: [
-          thumbContent,
-          note ? createElement('span', { className: 'neuron-card__note', text: note }) : null,
-        ],
+        children: [thumbContent, note ? createElement('span', { className: 'neuron-card__note', text: note }) : null],
       }),
       createElement('h3', { className: 'neuron-card__title', text: neuron.cellType || 'Unclassified neuron' }),
       createElement('p', { className: 'neuron-card__meta', text: metaText }),

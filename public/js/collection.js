@@ -28,11 +28,13 @@ function renderCollectionGrid() {
   emptyMessage.hidden = collectionEntries.length > 0;
 
   for (const entry of collectionEntries) {
-    collectionGrid.appendChild(createNeuronCard(entry.neuron, {
-      selected: selectedNames.has(entry.neuron.name),
-      onToggleSelect: handleCardSelectToggle,
-      onRemove: handleRemoveCardClick,
-    }));
+    collectionGrid.appendChild(
+      createNeuronCard(entry.neuron, {
+        selected: selectedNames.has(entry.neuron.name),
+        onToggleSelect: handleCardSelectToggle,
+        onRemove: handleRemoveCardClick,
+      }),
+    );
   }
 
   document.getElementById('collection-summary').textContent = summarizeCollection(collectionEntries).summaryText;

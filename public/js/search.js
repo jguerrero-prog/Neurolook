@@ -25,7 +25,10 @@ async function loadFilterSelect(field, comboboxes) {
 
   if (field === 'cell_type') {
     const categories = await api.getCategories(40);
-    appendSelectOptions(filterSelect, categories.map((category) => category.value));
+    appendSelectOptions(
+      filterSelect,
+      categories.map((category) => category.value),
+    );
   } else {
     const { values } = await api.getFilterValues(field);
     appendSelectOptions(filterSelect, values);
@@ -39,23 +42,27 @@ function renderRecentlyViewed() {
   if (recentNeurons.length === 0) return;
 
   const listElement = document.getElementById('recently-viewed-list');
-  listElement.replaceChildren(...recentNeurons.map((entry) => createElement('a', {
-    className: 'tm-recently-viewed-card',
-    attrs: { href: buildNeuronDetailUrl(entry.name) },
-    children: [
-      createElement('div', {
-        className: 'tm-recently-viewed-card__thumb',
-        children: [createElement('img', { attrs: { src: entry.pngUrl, alt: '', loading: 'lazy' } })],
-      }),
-      createElement('div', {
-        className: 'tm-recently-viewed-card__body',
+  listElement.replaceChildren(
+    ...recentNeurons.map((entry) =>
+      createElement('a', {
+        className: 'tm-recently-viewed-card',
+        attrs: { href: buildNeuronDetailUrl(entry.name) },
         children: [
-          createElement('div', { className: 'tm-recently-viewed-card__title', text: entry.cellType || entry.name }),
-          createElement('div', { className: 'tm-recently-viewed-card__meta', text: entry.species }),
+          createElement('div', {
+            className: 'tm-recently-viewed-card__thumb',
+            children: [createElement('img', { attrs: { src: entry.pngUrl, alt: '', loading: 'lazy' } })],
+          }),
+          createElement('div', {
+            className: 'tm-recently-viewed-card__body',
+            children: [
+              createElement('div', { className: 'tm-recently-viewed-card__title', text: entry.cellType || entry.name }),
+              createElement('div', { className: 'tm-recently-viewed-card__meta', text: entry.species }),
+            ],
+          }),
         ],
       }),
-    ],
-  })));
+    ),
+  );
   document.getElementById('recently-viewed-section').hidden = false;
 }
 

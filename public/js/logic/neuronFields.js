@@ -23,8 +23,14 @@ export const ORGANISM_FIELDS = {
   scientificName: { label: 'Scientific Name', get: (neuron) => formatText(neuron.scientificName) },
   strain: { label: 'Strain', get: (neuron) => formatText(neuron.strain) },
   gender: { label: 'Gender', get: (neuron) => formatText(neuron.gender) },
-  minAge: { label: 'Min Age', get: (neuron) => formatMeasurement(neuron.minAge, neuron.ageScale ? ` ${neuron.ageScale.toLowerCase()}` : '') },
-  maxAge: { label: 'Max Age', get: (neuron) => formatMeasurement(neuron.maxAge, neuron.ageScale ? ` ${neuron.ageScale.toLowerCase()}` : '') },
+  minAge: {
+    label: 'Min Age',
+    get: (neuron) => formatMeasurement(neuron.minAge, neuron.ageScale ? ` ${neuron.ageScale.toLowerCase()}` : ''),
+  },
+  maxAge: {
+    label: 'Max Age',
+    get: (neuron) => formatMeasurement(neuron.maxAge, neuron.ageScale ? ` ${neuron.ageScale.toLowerCase()}` : ''),
+  },
   development: { label: 'Development', get: (neuron) => formatText(neuron.ageClassification) },
   minWeight: { label: 'Min Weight', get: (neuron) => formatMeasurement(neuron.minWeight) },
   maxWeight: { label: 'Max Weight', get: (neuron) => formatMeasurement(neuron.maxWeight) },
@@ -52,7 +58,10 @@ export const EXPERIMENTAL_FIELDS = {
   tissueShrinkage: { label: 'Tissue Shrinkage', get: (neuron) => formatText(neuron.tissueShrinkageDisplay) },
   objectiveType: { label: 'Objective Type', get: (neuron) => formatText(neuron.objectiveType) },
   magnification: { label: 'Magnification', get: (neuron) => formatMeasurement(neuron.magnification, 'x') },
-  reconstructionSoftware: { label: 'Reconstruction Method', get: (neuron) => formatText(neuron.reconstructionSoftware) },
+  reconstructionSoftware: {
+    label: 'Reconstruction Method',
+    get: (neuron) => formatText(neuron.reconstructionSoftware),
+  },
   depositionDate: { label: 'Date of Deposition', get: (neuron) => formatText(neuron.depositionDate) },
   uploadDate: { label: 'Date of Upload', get: (neuron) => formatText(neuron.uploadDate) },
 };
@@ -69,15 +78,24 @@ export const MORPHOMETRY_FIELDS = {
   totalLength: { label: 'Total Length', get: (m) => formatMeasurement(m.totalLength, ' μm') },
   surfaceArea: { label: 'Total Surface', get: (m) => formatMeasurement(m.surfaceArea, ' μm²') },
   volume: { label: 'Total Volume', get: (m) => formatMeasurement(m.volume, ' μm³') },
-  maxEuclideanDistance: { label: 'Max Euclidean Distance', get: (m) => formatMeasurement(m.maxEuclideanDistance, ' μm') },
+  maxEuclideanDistance: {
+    label: 'Max Euclidean Distance',
+    get: (m) => formatMeasurement(m.maxEuclideanDistance, ' μm'),
+  },
   maxPathDistance: { label: 'Max Path Distance', get: (m) => formatMeasurement(m.maxPathDistance, ' μm') },
   maxBranchOrder: { label: 'Max Branch Order', get: (m) => formatMeasurement(m.maxBranchOrder) },
   averageContraction: { label: 'Average Contraction', get: (m) => formatMeasurement(m.averageContraction) },
   totalFragmentation: { label: 'Total Fragmentation', get: (m) => formatMeasurement(m.totalFragmentation) },
   partitionAsymmetry: { label: 'Partition Asymmetry', get: (m) => formatMeasurement(m.partitionAsymmetry) },
   averageRallsRatio: { label: "Average Rall's Ratio", get: (m) => formatMeasurement(m.averageRallsRatio) },
-  averageBifurcationAngleLocal: { label: 'Average Bifurcation Angle Local', get: (m) => formatMeasurement(m.averageBifurcationAngleLocal, '°') },
-  averageBifurcationAngleRemote: { label: 'Average Bifurcation Angle Remote', get: (m) => formatMeasurement(m.averageBifurcationAngleRemote, '°') },
+  averageBifurcationAngleLocal: {
+    label: 'Average Bifurcation Angle Local',
+    get: (m) => formatMeasurement(m.averageBifurcationAngleLocal, '°'),
+  },
+  averageBifurcationAngleRemote: {
+    label: 'Average Bifurcation Angle Remote',
+    get: (m) => formatMeasurement(m.averageBifurcationAngleRemote, '°'),
+  },
   fractalDimension: { label: 'Fractal Dimension', get: (m) => formatMeasurement(m.fractalDimension) },
 };
 

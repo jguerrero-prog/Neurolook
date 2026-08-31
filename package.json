@@ -5,9 +5,18 @@
   "type": "module",
   "description": "Local-first browser for NeuroMorpho.Org's neuron morphology library.",
   "scripts": {
-    "start": "node server/server.js"
+    "start": "node server/server.js",
+    "lint": "eslint public/js server test",
+    "format": "prettier --write public/js server test *.js *.json",
+    "format:check": "prettier --check public/js server test *.js *.json",
+    "test": "node --test test/"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.9.1",
+    "prettier": "^3.9.6"
   }
 }

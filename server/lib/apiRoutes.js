@@ -48,7 +48,16 @@ export async function handleGetFacetCounts(field, limit) {
     .map(([value, count]) => ({ value, count }));
 }
 
-export async function handleSearch({ name, species, brain_region: brainRegion, cell_type: cellType, archive, page, size, sort }) {
+export async function handleSearch({
+  name,
+  species,
+  brain_region: brainRegion,
+  cell_type: cellType,
+  archive,
+  page,
+  size,
+  sort,
+}) {
   const criteria = [];
   if (name) criteria.push({ field: 'neuron_name', value: `${name}*` });
   if (species) criteria.push({ field: 'species', value: species });
@@ -65,7 +74,9 @@ export async function handleSearch({ name, species, brain_region: brainRegion, c
 export async function handleGetNeuronDetail(name) {
   const metadataFromCache = await neuromorpho.isNeuronCached(name);
   const neuron = await neuromorpho.getNeuronByName(name);
-  const referencePubmedIds = Array.isArray(neuron.reference_pmid) ? neuron.reference_pmid : [neuron.reference_pmid].filter(Boolean);
+  const referencePubmedIds = Array.isArray(neuron.reference_pmid)
+    ? neuron.reference_pmid
+    : [neuron.reference_pmid].filter(Boolean);
 
   const [morphometry, swcCached, literature] = await Promise.all([
     neuromorpho.getMorphometryByName(name).catch(() => null),
@@ -100,7 +111,7 @@ export async function handleGetSimilarNeurons(name) {
         } catch {
           return null;
         }
-      })
+      }),
   );
   return enriched.filter(Boolean);
 }
@@ -108,7 +119,7 @@ export async function handleGetSimilarNeurons(name) {
 export async function handleListCollection() {
   const items = await collectionStore.list();
   return Promise.all(
-    items.map(async (item) => ({ ...item, cached: await isCachedLocally(item.archive, item.neuron_name) }))
+    items.map(async (item) => ({ ...item, cached: await isCachedLocally(item.archive, item.neuron_name) })),
   );
 }
 
@@ -134,6 +145,6 @@ export async function handleCompareNeurons(names) {
         neuromorpho.getMorphometryByName(name).catch(() => null),
       ]);
       return { neuron, morphometry };
-    })
+    }),
   );
 }

@@ -25,12 +25,13 @@ let currentNeuron = null;
 
 function renderFieldList(listElementId, rows) {
   const listElement = document.getElementById(listElementId);
-  listElement.replaceChildren(...rows.map(([label, value]) => createElement('div', {
-    children: [
-      createElement('dt', { text: label }),
-      createElement('dd', { text: value }),
-    ],
-  })));
+  listElement.replaceChildren(
+    ...rows.map(([label, value]) =>
+      createElement('div', {
+        children: [createElement('dt', { text: label }), createElement('dd', { text: value })],
+      }),
+    ),
+  );
 }
 
 // Notes can be long, free-flowing, and contain real links (a scaling-factor
@@ -57,13 +58,15 @@ function renderCitationSources(sources) {
     return;
   }
 
-  sourcesElement.replaceChildren(...sources.map(({ label, url }, index) => {
-    const link = createElement('a', {
-      attrs: { href: url, target: '_blank', rel: 'noopener noreferrer' },
-      text: label,
-    });
-    return index === 0 ? link : createElement('span', { children: [document.createTextNode('  ·  '), link] });
-  }));
+  sourcesElement.replaceChildren(
+    ...sources.map(({ label, url }, index) => {
+      const link = createElement('a', {
+        attrs: { href: url, target: '_blank', rel: 'noopener noreferrer' },
+        text: label,
+      });
+      return index === 0 ? link : createElement('span', { children: [document.createTextNode('  ·  '), link] });
+    }),
+  );
   sourcesElement.hidden = false;
 }
 
@@ -201,7 +204,9 @@ function handleSimilarCardToggle(neuron, similarNeuronName) {
 function bindSelectionTrayEvents(neuron) {
   document.getElementById('clear-selection').addEventListener('click', () => {
     clearSelection();
-    document.querySelectorAll('.neuron-card__select').forEach((checkbox) => { checkbox.checked = false; });
+    document.querySelectorAll('.neuron-card__select').forEach((checkbox) => {
+      checkbox.checked = false;
+    });
     updateSelectionTray(neuron);
   });
 }
@@ -217,11 +222,13 @@ async function loadSimilarNeurons(neuron) {
     const selectedNames = new Set(getSelection());
     const grid = document.getElementById('similar-neurons-grid');
     for (const { neuron: similarNeuron, similarity } of matches) {
-      grid.appendChild(createNeuronCard(similarNeuron, {
-        note: `${Math.round(similarity * 100)}% similar`,
-        selected: selectedNames.has(similarNeuron.name),
-        onToggleSelect: (name) => handleSimilarCardToggle(neuron, name),
-      }));
+      grid.appendChild(
+        createNeuronCard(similarNeuron, {
+          note: `${Math.round(similarity * 100)}% similar`,
+          selected: selectedNames.has(similarNeuron.name),
+          onToggleSelect: (name) => handleSimilarCardToggle(neuron, name),
+        }),
+      );
     }
     document.getElementById('similar-neurons-section').hidden = false;
   } catch {

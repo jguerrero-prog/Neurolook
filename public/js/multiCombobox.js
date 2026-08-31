@@ -39,35 +39,39 @@ class MultiCombobox {
   }
 
   setOptions(items, selectedValues) {
-    this.nativeContainer.replaceChildren(...items.map(({ value }) => {
-      const checkbox = createElement('input', { attrs: { type: 'checkbox', name: this.field, value } });
-      checkbox.checked = selectedValues.has(value);
-      return checkbox;
-    }));
+    this.nativeContainer.replaceChildren(
+      ...items.map(({ value }) => {
+        const checkbox = createElement('input', { attrs: { type: 'checkbox', name: this.field, value } });
+        checkbox.checked = selectedValues.has(value);
+        return checkbox;
+      }),
+    );
 
-    this.list.replaceChildren(...items.map(({ value, count }, index) => {
-      const option = createElement('li', {
-        className: 'tm-combobox__option',
-        attrs: {
-          role: 'option',
-          id: `${this.field}-option-${index}`,
-          'data-index': index,
-          'data-value': value,
-          'data-text': value.toLowerCase(),
-        },
-        children: [
-          createElement('img', {
-            className: 'tm-multiselect__checkbox',
-            attrs: { src: '/assets/icons/checkbox-unchecked.svg', alt: '', width: 14, height: 14 },
-          }),
-          createElement('span', { className: 'tm-combobox__option-label', text: value }),
-          createElement('span', { className: 'tm-multiselect__option-count', text: count.toLocaleString() }),
-        ],
-      });
-      option.addEventListener('click', () => this.toggleValue(value));
-      option.addEventListener('mouseenter', () => this.setActive(index));
-      return option;
-    }));
+    this.list.replaceChildren(
+      ...items.map(({ value, count }, index) => {
+        const option = createElement('li', {
+          className: 'tm-combobox__option',
+          attrs: {
+            role: 'option',
+            id: `${this.field}-option-${index}`,
+            'data-index': index,
+            'data-value': value,
+            'data-text': value.toLowerCase(),
+          },
+          children: [
+            createElement('img', {
+              className: 'tm-multiselect__checkbox',
+              attrs: { src: '/assets/icons/checkbox-unchecked.svg', alt: '', width: 14, height: 14 },
+            }),
+            createElement('span', { className: 'tm-combobox__option-label', text: value }),
+            createElement('span', { className: 'tm-multiselect__option-count', text: count.toLocaleString() }),
+          ],
+        });
+        option.addEventListener('click', () => this.toggleValue(value));
+        option.addEventListener('mouseenter', () => this.setActive(index));
+        return option;
+      }),
+    );
 
     const emptyItem = createElement('li', { className: 'tm-combobox__empty', text: 'No matches' });
     emptyItem.hidden = true;
@@ -89,7 +93,9 @@ class MultiCombobox {
   // navigating; the caller (browse.js) triggers one navigation afterward
   // for all fields at once, rather than one per field.
   clearSelection() {
-    this.nativeContainer.querySelectorAll('input:checked').forEach((checkbox) => { checkbox.checked = false; });
+    this.nativeContainer.querySelectorAll('input:checked').forEach((checkbox) => {
+      checkbox.checked = false;
+    });
     this.syncSelectedDisplay();
   }
 
@@ -122,22 +128,22 @@ class MultiCombobox {
     });
 
     this.root.classList.toggle(SELECTED_CLASS, selectedValues.size > 0);
-    this.valueLabel.textContent = selectedValues.size > 0
-      ? [...selectedValues].join(', ')
-      : this.placeholder;
+    this.valueLabel.textContent = selectedValues.size > 0 ? [...selectedValues].join(', ') : this.placeholder;
 
-    this.pillsContainer.replaceChildren(...[...selectedValues].map((value) => {
-      const pill = createElement('button', {
-        className: 'tm-multiselect__pill',
-        attrs: { type: 'button', 'data-value': value, 'aria-label': `Remove ${value}` },
-        children: [
-          createElement('span', { className: 'tm-multiselect__pill-label', text: value }),
-          createElement('img', { attrs: { src: '/assets/icons/pill-remove.svg', alt: '', width: 12, height: 12 } }),
-        ],
-      });
-      pill.addEventListener('click', () => this.toggleValue(value));
-      return pill;
-    }));
+    this.pillsContainer.replaceChildren(
+      ...[...selectedValues].map((value) => {
+        const pill = createElement('button', {
+          className: 'tm-multiselect__pill',
+          attrs: { type: 'button', 'data-value': value, 'aria-label': `Remove ${value}` },
+          children: [
+            createElement('span', { className: 'tm-multiselect__pill-label', text: value }),
+            createElement('img', { attrs: { src: '/assets/icons/pill-remove.svg', alt: '', width: 12, height: 12 } }),
+          ],
+        });
+        pill.addEventListener('click', () => this.toggleValue(value));
+        return pill;
+      }),
+    );
   }
 
   getOptionItems() {
