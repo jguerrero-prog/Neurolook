@@ -1,3 +1,19 @@
+// @ts-check
+/** @typedef {import('../models/Neuron.js').Neuron} Neuron */
+/** @typedef {import('../models/Literature.js').Literature} Literature */
+
+/**
+ * @typedef {Object} CitationSource
+ * @property {string|null} label A short label for the link, for example "doi: 10.1/x".
+ * @property {string|null} url A working link to the publication.
+ */
+
+/**
+ * @typedef {Object} CitationResult
+ * @property {string[]} lines The full citation, one line at a time.
+ * @property {CitationSource[]} sources A clickable link for each publication that resolved to a real identifier.
+ */
+
 // Builds the citation lines shown on a neuron's detail page. Prefers real
 // publication details (title/authors/journal) when we could look them up;
 // falls back to a plain PMID reference otherwise. Every citation also
@@ -8,6 +24,11 @@
 // never neuron.referencePubmedIds directly — since a neuron's own
 // reference id can be one of NeuroMorpho's internal placeholder numbers,
 // which isn't a real, dereferenceable identifier and would be a dead link.
+/**
+ * @param {Neuron} neuron
+ * @param {Literature[]} literatureEntries
+ * @returns {CitationResult}
+ */
 export function buildCitationLines(neuron, literatureEntries) {
   const publicationLines =
     literatureEntries.length > 0

@@ -1,3 +1,4 @@
+// @ts-check
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
@@ -8,6 +9,7 @@ import { HttpError } from './lib/apiRoutes.js';
 const PORT = process.env.PORT || 4310;
 const PUBLIC_DIR = fileURLToPath(new URL('../public/', import.meta.url));
 
+/** @type {Object<string, string>} */
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -48,6 +50,15 @@ const SECURITY_HEADERS = {
   ].join('; '),
 };
 
+/**
+ * @typedef {Object} Route
+ * @property {string} method
+ * @property {RegExp} pattern
+ * @property {(req: import('node:http').IncomingMessage, params: Object<string, string>, search: URLSearchParams) => Promise<any>} handler
+ * @property {'json'|'text'} [responseType]
+ */
+
+/** @type {Route[]} */
 const ROUTES = [
   { method: 'GET', pattern: /^\/api\/stats$/, handler: () => api.handleGetStats() },
   { method: 'GET', pattern: /^\/api\/random-neuron$/, handler: () => api.handleGetRandomNeuron() },
@@ -115,6 +126,7 @@ const ROUTES = [
   },
 ];
 
+/** @param {import('node:http').IncomingMessage} req @returns {Promise<any>} */
 function readJsonBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -132,11 +144,13 @@ function readJsonBody(req) {
   });
 }
 
+/** @param {import('node:http').ServerResponse} res @param {number} status @param {any} data @returns {void} */
 function sendJson(res, status, data) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(data));
 }
 
+/** @param {import('node:http').ServerResponse} res @param {string} pathname @returns {Promise<void>} */
 async function serveStaticFile(res, pathname) {
   const safePath = normalize(pathname).replace(/^(\.\.[/\\])+/, '');
   let filePath = join(PUBLIC_DIR, safePath === '/' ? 'index.html' : safePath);
@@ -153,10 +167,17 @@ async function serveStaticFile(res, pathname) {
   }
 }
 
+/**
+ * @param {import('node:http').IncomingMessage} req
+ * @param {import('node:http').ServerResponse} res
+ * @param {URL} url
+ * @param {Route} route
+ * @returns {Promise<void>}
+ */
 async function handleApiRequest(req, res, url, route) {
   const match = url.pathname.match(route.pattern);
   try {
-    const result = await route.handler(req, match.groups ?? {}, url.searchParams);
+    const result = await route.handler(req, match?.groups ?? {}, url.searchParams);
     if (route.responseType === 'text') {
       res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
       res.end(result);
@@ -166,13 +187,13 @@ async function handleApiRequest(req, res, url, route) {
   } catch (error) {
     const status = error instanceof HttpError ? error.status : 500;
     if (status === 500) console.error(error);
-    sendJson(res, status, { error: error.message });
+    sendJson(res, status, { error: /** @type {Error} */ (error).message });
   }
 }
 
 const server = createServer(async (req, res) => {
   res.setHeaders(new Map(Object.entries(SECURITY_HEADERS)));
-  const url = new URL(req.url, `http://${req.headers.host}`);
+  const url = new URL(/** @type {string} */ (req.url), `http://${req.headers.host}`);
 
   if (url.pathname.startsWith('/api/')) {
     const route = ROUTES.find((candidate) => candidate.method === req.method && candidate.pattern.test(url.pathname));

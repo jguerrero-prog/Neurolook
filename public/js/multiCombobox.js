@@ -1,9 +1,16 @@
+// @ts-check
 import { createElement } from './dom.js';
 
 const OPEN_CLASS = 'tm-combobox--open';
 const SELECTED_CLASS = 'tm-combobox--selected';
 const ACTIVE_OPTION_CLASS = 'tm-combobox__option--active';
 const SELECTED_OPTION_CLASS = 'tm-combobox__option--selected';
+
+/**
+ * @typedef {Object} FacetOption
+ * @property {string} value
+ * @property {number} count
+ */
 
 // A facet's option list can run into the dozens, so it's collapsed behind a
 // dropdown (like Combobox in combobox.js) instead of an always-open,
@@ -15,17 +22,19 @@ const SELECTED_OPTION_CLASS = 'tm-combobox__option--selected';
 // plain (hidden) checkboxes, so the existing query-building code in
 // browse.js — which reads `input[name][checked]` — needs no changes.
 class MultiCombobox {
+  /** @param {HTMLElement} root */
   constructor(root) {
     this.root = root;
     this.field = root.dataset.multiselect;
-    this.trigger = root.querySelector('.tm-combobox__trigger');
-    this.valueLabel = root.querySelector('.tm-combobox__value');
+    this.trigger = /** @type {HTMLElement} */ (root.querySelector('.tm-combobox__trigger'));
+    this.valueLabel = /** @type {HTMLElement} */ (root.querySelector('.tm-combobox__value'));
     this.placeholder = this.valueLabel.textContent;
-    this.panel = root.querySelector('.tm-combobox__panel');
-    this.searchInput = root.querySelector('.tm-combobox__search');
-    this.list = root.querySelector('.tm-combobox__list');
-    this.nativeContainer = root.querySelector('.tm-multiselect__native');
-    this.pillsContainer = root.querySelector('.tm-multiselect__pills');
+    this.panel = /** @type {HTMLElement} */ (root.querySelector('.tm-combobox__panel'));
+    this.searchInput = /** @type {HTMLInputElement} */ (root.querySelector('.tm-combobox__search'));
+    this.list = /** @type {HTMLElement} */ (root.querySelector('.tm-combobox__list'));
+    this.nativeContainer = /** @type {HTMLElement} */ (root.querySelector('.tm-multiselect__native'));
+    this.pillsContainer = /** @type {HTMLElement} */ (root.querySelector('.tm-multiselect__pills'));
+    /** @type {HTMLElement|null} */
     this.emptyItem = null;
     this.activeIndex = -1;
 
@@ -34,14 +43,21 @@ class MultiCombobox {
     this.searchInput.addEventListener('input', () => this.filterOptions());
     this.searchInput.addEventListener('keydown', (event) => this.handleSearchKeydown(event));
     document.addEventListener('click', (event) => {
-      if (!root.contains(event.target)) this.close();
+      if (!root.contains(/** @type {Node} */ (event.target))) this.close();
     });
   }
 
+  /**
+   * @param {FacetOption[]} items
+   * @param {Set<string>} selectedValues
+   * @returns {void}
+   */
   setOptions(items, selectedValues) {
     this.nativeContainer.replaceChildren(
       ...items.map(({ value }) => {
-        const checkbox = createElement('input', { attrs: { type: 'checkbox', name: this.field, value } });
+        const checkbox = /** @type {HTMLInputElement} */ (
+          createElement('input', { attrs: { type: 'checkbox', name: this.field, value } })
+        );
         checkbox.checked = selectedValues.has(value);
         return checkbox;
       }),
@@ -81,33 +97,40 @@ class MultiCombobox {
     this.syncSelectedDisplay();
   }
 
+  /** @param {string} value @returns {HTMLInputElement|null} */
   getCheckbox(value) {
     return this.nativeContainer.querySelector(`input[value="${CSS.escape(value)}"]`);
   }
 
+  /** @returns {string[]} */
   getSelectedValues() {
-    return [...this.nativeContainer.querySelectorAll('input:checked')].map((checkbox) => checkbox.value);
+    return [...this.nativeContainer.querySelectorAll('input:checked')].map(
+      (checkbox) => /** @type {HTMLInputElement} */ (checkbox).value,
+    );
   }
 
   // For "Clear all" — resets this field's checkboxes/pills without
   // navigating; the caller (browse.js) triggers one navigation afterward
   // for all fields at once, rather than one per field.
+  /** @returns {void} */
   clearSelection() {
     this.nativeContainer.querySelectorAll('input:checked').forEach((checkbox) => {
-      checkbox.checked = false;
+      /** @type {HTMLInputElement} */ (checkbox).checked = false;
     });
     this.syncSelectedDisplay();
   }
 
   // Checks exactly one value (unchecking anything else) — for setting a
   // programmatic default, as opposed to toggleValue's user-driven add/remove.
+  /** @param {string} value @returns {void} */
   selectOnly(value) {
     this.nativeContainer.querySelectorAll('input').forEach((checkbox) => {
-      checkbox.checked = checkbox.value === value;
+      /** @type {HTMLInputElement} */ (checkbox).checked = checkbox.value === value;
     });
     this.syncSelectedDisplay();
   }
 
+  /** @param {string} value @returns {void} */
   toggleValue(value) {
     const checkbox = this.getCheckbox(value);
     if (!checkbox) return;
@@ -116,15 +139,17 @@ class MultiCombobox {
     this.syncSelectedDisplay();
   }
 
+  /** @returns {void} */
   syncSelectedDisplay() {
     const selectedValues = new Set(this.getSelectedValues());
 
     this.list.querySelectorAll('.tm-combobox__option').forEach((item) => {
-      const isSelected = selectedValues.has(item.dataset.value);
-      item.classList.toggle(SELECTED_OPTION_CLASS, isSelected);
-      item.setAttribute('aria-selected', String(isSelected));
-      item.querySelector('.tm-multiselect__checkbox').src =
-        `/assets/icons/checkbox-${isSelected ? 'checked' : 'unchecked'}.svg`;
+      const element = /** @type {HTMLElement} */ (item);
+      const isSelected = selectedValues.has(element.dataset.value ?? '');
+      element.classList.toggle(SELECTED_OPTION_CLASS, isSelected);
+      element.setAttribute('aria-selected', String(isSelected));
+      const checkboxImage = /** @type {HTMLImageElement} */ (element.querySelector('.tm-multiselect__checkbox'));
+      checkboxImage.src = `/assets/icons/checkbox-${isSelected ? 'checked' : 'unchecked'}.svg`;
     });
 
     this.root.classList.toggle(SELECTED_CLASS, selectedValues.size > 0);
@@ -146,24 +171,28 @@ class MultiCombobox {
     );
   }
 
+  /** @returns {HTMLElement[]} */
   getOptionItems() {
-    return [...this.list.querySelectorAll('.tm-combobox__option')];
+    return /** @type {HTMLElement[]} */ ([...this.list.querySelectorAll('.tm-combobox__option')]);
   }
 
+  /** @returns {HTMLElement[]} */
   getVisibleOptionItems() {
     return this.getOptionItems().filter((item) => !item.hidden);
   }
 
+  /** @returns {void} */
   filterOptions() {
     const query = this.searchInput.value.trim().toLowerCase();
     const items = this.getOptionItems();
     items.forEach((item) => {
-      item.hidden = query !== '' && !item.dataset.text.includes(query);
+      item.hidden = query !== '' && !item.dataset.text?.includes(query);
     });
-    this.emptyItem.hidden = this.getVisibleOptionItems().length > 0;
+    if (this.emptyItem) this.emptyItem.hidden = this.getVisibleOptionItems().length > 0;
     this.setActive(this.getVisibleOptionItems().length > 0 ? 0 : -1);
   }
 
+  /** @returns {void} */
   open() {
     if (this.root.classList.contains(OPEN_CLASS)) return;
     this.root.classList.add(OPEN_CLASS);
@@ -174,6 +203,7 @@ class MultiCombobox {
     this.searchInput.focus();
   }
 
+  /** @returns {void} */
   close() {
     if (!this.root.classList.contains(OPEN_CLASS)) return;
     this.root.classList.remove(OPEN_CLASS);
@@ -182,6 +212,7 @@ class MultiCombobox {
     this.setActive(-1);
   }
 
+  /** @returns {void} */
   toggleOpen() {
     if (this.root.classList.contains(OPEN_CLASS)) this.close();
     else this.open();
@@ -189,6 +220,7 @@ class MultiCombobox {
 
   // `index` is relative to the currently visible (filtered) items, since
   // that's the list a keyboard or mouse user is actually navigating.
+  /** @param {number} index @returns {void} */
   setActive(index) {
     const visibleItems = this.getVisibleOptionItems();
     this.getOptionItems().forEach((item) => item.classList.remove(ACTIVE_OPTION_CLASS));
@@ -204,6 +236,7 @@ class MultiCombobox {
     }
   }
 
+  /** @param {number} delta @returns {void} */
   moveActive(delta) {
     const visibleItems = this.getVisibleOptionItems();
     if (visibleItems.length === 0) return;
@@ -214,11 +247,13 @@ class MultiCombobox {
     this.setActive(next);
   }
 
+  /** @returns {void} */
   toggleActive() {
     const activeItem = this.getOptionItems().find((item) => Number(item.dataset.index) === this.activeIndex);
-    if (activeItem) this.toggleValue(activeItem.dataset.value);
+    if (activeItem) this.toggleValue(activeItem.dataset.value ?? '');
   }
 
+  /** @param {KeyboardEvent} event @returns {void} */
   handleTriggerKeydown(event) {
     if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
       event.preventDefault();
@@ -226,6 +261,7 @@ class MultiCombobox {
     }
   }
 
+  /** @param {KeyboardEvent} event @returns {void} */
   handleSearchKeydown(event) {
     switch (event.key) {
       case 'ArrowDown':
@@ -254,6 +290,10 @@ class MultiCombobox {
   }
 }
 
+/**
+ * @param {HTMLElement} root
+ * @returns {MultiCombobox}
+ */
 export function initMultiCombobox(root) {
   return new MultiCombobox(root);
 }

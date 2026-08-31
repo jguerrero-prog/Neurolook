@@ -1,3 +1,5 @@
+// @ts-check
+
 // Tracks which neurons are queued for comparison. Kept in sessionStorage so
 // the selection survives a reload of the *same* page context — e.g.
 // refining filters on Browse — without needing server-side state for what
@@ -8,14 +10,22 @@
 // of carrying over a selection you can no longer see checked anywhere.
 const STORAGE_KEY = 'neurolook:compareSelection';
 
+/**
+ * @typedef {Object} SelectionState
+ * @property {string|null} scope Which page context this selection belongs to.
+ * @property {string[]} names The neuron names currently queued for comparison.
+ */
+
+/** @returns {SelectionState} */
 function read() {
   try {
-    return JSON.parse(sessionStorage.getItem(STORAGE_KEY)) ?? { scope: null, names: [] };
+    return JSON.parse(String(sessionStorage.getItem(STORAGE_KEY))) ?? { scope: null, names: [] };
   } catch {
     return { scope: null, names: [] };
   }
 }
 
+/** @param {SelectionState} state @returns {void} */
 function write(state) {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
@@ -25,15 +35,18 @@ function write(state) {
 // 'collection', or `neuron:${name}`). Resets the selection if the stored
 // scope doesn't match — i.e. the previous selection belonged to a different
 // page context.
+/** @param {string} scope @returns {void} */
 export function ensureScope(scope) {
   const state = read();
   if (state.scope !== scope) write({ scope, names: [] });
 }
 
+/** @returns {string[]} */
 export function getSelection() {
   return read().names;
 }
 
+/** @param {string} neuronName @returns {string[]} The selection after the change. */
 export function toggleSelection(neuronName) {
   const state = read();
   const next = state.names.includes(neuronName)
@@ -43,6 +56,7 @@ export function toggleSelection(neuronName) {
   return next;
 }
 
+/** @returns {void} */
 export function clearSelection() {
   write({ ...read(), names: [] });
 }

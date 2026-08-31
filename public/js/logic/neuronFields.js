@@ -1,23 +1,53 @@
+// @ts-check
+
 // Field definitions matching NeuroMorpho's own neuron_info.jsp page, not a
 // curated subset — a researcher may need any of these. Pure functions only,
 // no DOM access, so the view layer never decides what a field means.
 
+/**
+ * @typedef {Object} FieldDefinition
+ * @property {string} label The human-readable name shown for this field.
+ * @property {(entity: any) => string} get Reads and formats this field's value from a Neuron or Morphometry instance.
+ */
+
+/**
+ * @typedef {Object<string, FieldDefinition>} FieldGroup
+ */
+
+/**
+ * @typedef {Object} FieldRow
+ * @property {string} label
+ * @property {any[]} values One formatted value per compared entity.
+ * @property {boolean} differs Whether the compared entities disagree on this field.
+ */
+
+/**
+ * @param {unknown} value
+ * @param {string} [unit]
+ * @returns {string}
+ */
 function formatMeasurement(value, unit = '') {
   if (value === null || value === undefined || value === '') return 'Not reported';
   const numeric = Number(value);
-  return Number.isNaN(numeric) ? value : `${numeric.toLocaleString()}${unit}`;
+  return Number.isNaN(numeric) ? String(value) : `${numeric.toLocaleString()}${unit}`;
 }
 
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
 function formatText(value) {
-  return value === null || value === undefined || value === '' ? 'Not reported' : value;
+  return value === null || value === undefined || value === '' ? 'Not reported' : String(value);
 }
 
+/** @type {FieldGroup} */
 export const IDENTIFICATION_FIELDS = {
   nmoId: { label: 'NeuroMorpho.Org ID', get: (neuron) => formatText(neuron.nmoId) },
   cellName: { label: 'Cell Name', get: (neuron) => formatText(neuron.name) },
   archive: { label: 'Archive', get: (neuron) => formatText(neuron.archive) },
 };
 
+/** @type {FieldGroup} */
 export const ORGANISM_FIELDS = {
   species: { label: 'Species Name', get: (neuron) => formatText(neuron.species) },
   scientificName: { label: 'Scientific Name', get: (neuron) => formatText(neuron.scientificName) },
@@ -36,6 +66,7 @@ export const ORGANISM_FIELDS = {
   maxWeight: { label: 'Max Weight', get: (neuron) => formatMeasurement(neuron.maxWeight) },
 };
 
+/** @type {FieldGroup} */
 export const ANATOMICAL_FIELDS = {
   domain: { label: 'Structural Domains', get: (neuron) => formatText(neuron.domain) },
   physicalIntegrity: { label: 'Physical Integrity', get: (neuron) => formatText(neuron.physicalIntegrity) },
@@ -48,6 +79,7 @@ export const ANATOMICAL_FIELDS = {
   attributes: { label: 'Morphological Attributes', get: (neuron) => formatText(neuron.attributes) },
 };
 
+/** @type {FieldGroup} */
 export const EXPERIMENTAL_FIELDS = {
   originalFormat: { label: 'Original Format', get: (neuron) => formatText(neuron.originalFormat) },
   protocol: { label: 'Experiment Protocol', get: (neuron) => formatText(neuron.protocol) },
@@ -66,6 +98,7 @@ export const EXPERIMENTAL_FIELDS = {
   uploadDate: { label: 'Date of Upload', get: (neuron) => formatText(neuron.uploadDate) },
 };
 
+/** @type {FieldGroup} */
 export const MORPHOMETRY_FIELDS = {
   stemCount: { label: 'Number of Stems', get: (m) => formatMeasurement(m.stemCount) },
   bifurcationCount: { label: 'Number of Bifurcations', get: (m) => formatMeasurement(m.bifurcationCount) },
@@ -99,16 +132,26 @@ export const MORPHOMETRY_FIELDS = {
   fractalDimension: { label: 'Fractal Dimension', get: (m) => formatMeasurement(m.fractalDimension) },
 };
 
+/** @returns {Array<[string, string]>} */
 function unavailableMorphometryRows() {
   return [['Morphometry', 'Not available for this neuron']];
 }
 
 // Renders one entity's (a single Neuron or Morphometry instance) fields as
 // [label, value] rows, in the given field group's declared order.
+/**
+ * @param {any} entity A Neuron or Morphometry instance.
+ * @param {FieldGroup} fieldGroup
+ * @returns {Array<[string, string]>}
+ */
 export function buildFieldRows(entity, fieldGroup) {
   return Object.values(fieldGroup).map(({ label, get }) => [label, get(entity)]);
 }
 
+/**
+ * @param {any} morphometry A Morphometry instance, possibly with no data available.
+ * @returns {Array<[string, string]>}
+ */
 export function buildMorphometryRows(morphometry) {
   if (!morphometry?.isAvailable) return unavailableMorphometryRows();
   return buildFieldRows(morphometry, MORPHOMETRY_FIELDS);
@@ -116,6 +159,11 @@ export function buildMorphometryRows(morphometry) {
 
 // Renders the same fields across several entities as comparison rows, each
 // carrying every entity's value plus whether they differ.
+/**
+ * @param {any[]} entities Neuron or Morphometry instances being compared.
+ * @param {FieldGroup} fieldGroup
+ * @returns {FieldRow[]}
+ */
 export function buildFieldComparisonRows(entities, fieldGroup) {
   return Object.values(fieldGroup).map(({ label, get }) => {
     const values = entities.map((entity) => get(entity));
@@ -123,6 +171,10 @@ export function buildFieldComparisonRows(entities, fieldGroup) {
   });
 }
 
+/**
+ * @param {any[]} morphometryRecords
+ * @returns {FieldRow[]}
+ */
 export function buildMorphometryComparisonRows(morphometryRecords) {
   return buildFieldComparisonRows(morphometryRecords, MORPHOMETRY_FIELDS);
 }

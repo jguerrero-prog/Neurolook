@@ -1,3 +1,4 @@
+// @ts-check
 import { getCached, setCached } from './cache.js';
 
 const BASE_URL = 'https://neuromorpho.org/api';
@@ -11,13 +12,18 @@ const HOUR = 60 * 60 * 1000;
 // A plain fetch() has no built-in limit on how long it'll wait, so a hung
 // NeuroMorpho request would hang this server's response right along with it.
 // Mirrors the same timeout the browser-side client already applies.
+/**
+ * @param {string} url
+ * @param {RequestInit} [options]
+ * @returns {Promise<Response>}
+ */
 async function fetchWithTimeout(url, options) {
   const abortController = new AbortController();
   const timeoutId = setTimeout(() => abortController.abort(), REQUEST_TIMEOUT_MS);
   try {
     return await fetch(url, { ...options, signal: abortController.signal });
   } catch (error) {
-    if (error.name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new Error(`Request to ${url} timed out after ${REQUEST_TIMEOUT_MS}ms`, { cause: error });
     }
     throw error;
@@ -31,8 +37,14 @@ async function fetchWithTimeout(url, options) {
 // wait for the one before it to finish, with a fixed pause in between, so
 // Neurolook never sends a burst of requests no matter how many pages are
 // loading at once.
+/** @type {Promise<any>} */
 let requestQueue = Promise.resolve();
 
+/**
+ * @template T
+ * @param {() => Promise<T>} task
+ * @returns {Promise<T>}
+ */
 function schedule(task) {
   const result = requestQueue.then(task);
   requestQueue = result.then(
@@ -42,6 +54,7 @@ function schedule(task) {
   return result;
 }
 
+/** @param {string} path @returns {Promise<any>} */
 async function fetchJson(path) {
   const url = `${BASE_URL}${path}`;
   const cached = await getCached(url);
@@ -56,6 +69,7 @@ async function fetchJson(path) {
   return response.json();
 }
 
+/** @param {string} path @param {number} ttlMs @returns {Promise<any>} */
 async function fetchJsonCached(path, ttlMs) {
   const url = `${BASE_URL}${path}`;
   const cached = await getCached(url);
@@ -66,16 +80,19 @@ async function fetchJsonCached(path, ttlMs) {
   return payload;
 }
 
+/** @returns {Promise<number>} */
 export async function getTotalNeuronCount() {
   const payload = await fetchJsonCached('/neuron?size=1', 6 * HOUR);
   return payload.page.totalElements;
 }
 
+/** @param {string} field @returns {Promise<number>} */
 export async function getFieldCount(field) {
   const payload = await fetchJsonCached(`/neuron/fields/${field}?size=1`, 6 * HOUR);
   return payload.page.totalElements;
 }
 
+/** @param {string} field @returns {Promise<string[]>} */
 export async function getFieldValues(field) {
   const payload = await fetchJsonCached(`/neuron/fields/${field}?size=500`, 24 * HOUR);
   return payload.fields;
@@ -83,6 +100,7 @@ export async function getFieldValues(field) {
 
 // Partition endpoints are paginated (max 500 entries per page). This walks every
 // page and merges them so category counts reflect the whole database, not page one.
+/** @param {string} field @returns {Promise<Object<string, number>>} */
 export async function getPartition(field) {
   const firstPage = await fetchJsonCached(`/neuron/partition/${field}?page=0&size=500`, 6 * HOUR);
   const merged = { ...firstPage.fields };
@@ -94,25 +112,30 @@ export async function getPartition(field) {
   return merged;
 }
 
+/** @param {string} name @returns {Promise<any>} The raw neuron record from NeuroMorpho's API. */
 export async function getNeuronByName(name) {
   return fetchJsonCached(`/neuron/name/${encodeURIComponent(name)}`, 24 * HOUR);
 }
 
+/** @param {number|string} id @returns {Promise<any>} The raw neuron record from NeuroMorpho's API. */
 export async function getNeuronById(id) {
   return fetchJsonCached(`/neuron/id/${id}`, 24 * HOUR);
 }
 
+/** @param {string} name @returns {Promise<any>} The raw morphometry record from NeuroMorpho's API. */
 export async function getMorphometryByName(name) {
   return fetchJsonCached(`/morphometry/name/${encodeURIComponent(name)}`, 24 * HOUR);
 }
 
 // Reports whether a neuron's own record is already on disk, without
 // triggering a fetch — used to show a "served from cache" indicator.
+/** @param {string} name @returns {Promise<boolean>} */
 export async function isNeuronCached(name) {
   const url = `${BASE_URL}/neuron/name/${encodeURIComponent(name)}`;
   return (await getCached(url)) !== null;
 }
 
+/** @param {string|number} pmid @returns {Promise<any|null>} The raw publication record, or null if none is found. */
 export async function getLiteratureByPmid(pmid) {
   const payload = await fetchJsonCached(`/literature/select?q=pmid:${encodeURIComponent(pmid)}`, 7 * 24 * HOUR);
   return payload._embedded?.publicationResources?.[0] ?? null;
@@ -121,6 +144,7 @@ export async function getLiteratureByPmid(pmid) {
 // Picks one neuron at random from the whole database by jumping to a random
 // page index (each page holds one record), matching NeuroMorpho's own
 // "random cells" feature.
+/** @returns {Promise<string|null>} */
 export async function getRandomNeuronName() {
   const total = await getTotalNeuronCount();
   const randomIndex = Math.floor(Math.random() * total);
@@ -135,6 +159,7 @@ export async function getRandomNeuronName() {
 // disables the wildcard entirely, so a value containing `*` is left unquoted.
 // `fq` is the opposite: it handles raw multi-word/multi-value text fine and
 // 404s if a value is quoted at all, so `fq` values are always left as-is.
+/** @param {string} value @returns {string} */
 function formatPrimaryQueryValue(value) {
   return value
     .split(',')
@@ -142,9 +167,27 @@ function formatPrimaryQueryValue(value) {
     .join(',');
 }
 
+/**
+ * @typedef {Object} SearchCriterion
+ * @property {string} field
+ * @property {string} value
+ */
+
+/**
+ * @typedef {Object} SearchResult
+ * @property {any[]} neurons Raw neuron records from NeuroMorpho's API.
+ * @property {number} totalElements
+ * @property {number} totalPages
+ */
+
 // criteria: array of { field, value }. The first entry becomes the primary `q`
 // match, every other entry becomes an additional `fq` (AND) filter, matching
 // the query syntax documented at neuromorpho.org/apiReference.html.
+/**
+ * @param {SearchCriterion[]} criteria
+ * @param {{size?: number, page?: number, sort?: string}} [options]
+ * @returns {Promise<SearchResult>}
+ */
 export async function searchNeurons(criteria, { size = 12, page = 0, sort = '' } = {}) {
   if (criteria.length === 0) {
     throw new Error('searchNeurons requires at least one criterion');
@@ -174,7 +217,7 @@ export async function searchNeurons(criteria, { size = 12, page = 0, sort = '' }
     throw new Error(`NeuroMorpho API returned ${response.status} for /neuron/select`);
   }
 
-  const payload = await response.json();
+  const payload = /** @type {any} */ (await response.json());
   return {
     neurons: payload._embedded?.neuronResources ?? [],
     totalElements: payload.page.totalElements,
@@ -187,6 +230,11 @@ export async function searchNeurons(criteria, { size = 12, page = 0, sort = '' }
 // main API, documented in that repo's README rather than apiReference.html.
 // searchType: 0 = fast approximate shape matching, 1 = direct statistical
 // shape comparison, 2 = both combined.
+/**
+ * @param {number|string} neuronId
+ * @param {{usePCA?: number, count?: number, searchType?: number}} [options]
+ * @returns {Promise<any[]>}
+ */
 export async function getSimilarNeurons(neuronId, { usePCA = 0, count = 8, searchType = 1 } = {}) {
   const url = `${SIMILARITY_BASE_URL}/similarNeurons/${usePCA}/${neuronId}/${count}/${searchType}`;
   const cached = await getCached(url);
@@ -198,12 +246,13 @@ export async function getSimilarNeurons(neuronId, { usePCA = 0, count = 8, searc
   if (!response.ok) {
     throw new Error(`NeuroMorpho similarity service returned ${response.status}`);
   }
-  const payload = await response.json();
+  const payload = /** @type {any} */ (await response.json());
   const results = payload.similarityresult ?? [];
   await setCached(url, results, 24 * HOUR);
   return results;
 }
 
+/** @param {string} archive @param {string} neuronName @returns {Promise<string>} */
 export async function downloadSwcFile(archive, neuronName) {
   const url = `https://neuromorpho.org/dableFiles/${archive.toLowerCase()}/CNG%20version/${neuronName}.CNG.swc`;
   const response = await schedule(() => fetchWithTimeout(url, { headers: { 'User-Agent': USER_AGENT } }));

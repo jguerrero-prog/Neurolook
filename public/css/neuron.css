@@ -348,3 +348,9 @@
 .tm-citation-sources a:hover {
   text-decoration: underline;
 }
+
+/* Purely visual, so it is skipped when selecting or copying this text,
+   matching aria-hidden already keeping it out of screen readers. */
+.citation-sources__separator {
+  user-select: none;
+}

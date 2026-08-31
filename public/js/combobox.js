@@ -1,3 +1,4 @@
+// @ts-check
 import { createElement } from './dom.js';
 
 const OPEN_CLASS = 'tm-combobox--open';
@@ -10,15 +11,17 @@ const SELECTED_OPTION_CLASS = 'tm-combobox__option--selected';
 // keeping the original <select> (hidden) as the field the form actually
 // submits, so existing form-submission and value-reading code is untouched.
 class Combobox {
+  /** @param {HTMLElement} root */
   constructor(root) {
     this.root = root;
-    this.trigger = root.querySelector('.tm-combobox__trigger');
-    this.valueLabel = root.querySelector('.tm-combobox__value');
-    this.panel = root.querySelector('.tm-combobox__panel');
-    this.searchInput = root.querySelector('.tm-combobox__search');
-    this.list = root.querySelector('.tm-combobox__list');
+    this.trigger = /** @type {HTMLElement} */ (root.querySelector('.tm-combobox__trigger'));
+    this.valueLabel = /** @type {HTMLElement} */ (root.querySelector('.tm-combobox__value'));
+    this.panel = /** @type {HTMLElement} */ (root.querySelector('.tm-combobox__panel'));
+    this.searchInput = /** @type {HTMLInputElement} */ (root.querySelector('.tm-combobox__search'));
+    this.list = /** @type {HTMLElement} */ (root.querySelector('.tm-combobox__list'));
+    /** @type {HTMLElement|null} */
     this.emptyItem = null;
-    this.nativeSelect = root.querySelector('.tm-combobox__native');
+    this.nativeSelect = /** @type {HTMLSelectElement} */ (root.querySelector('.tm-combobox__native'));
     this.placeholder = this.valueLabel.textContent;
     this.activeIndex = -1;
 
@@ -27,12 +30,13 @@ class Combobox {
     this.searchInput.addEventListener('input', () => this.filterOptions());
     this.searchInput.addEventListener('keydown', (event) => this.handleSearchKeydown(event));
     document.addEventListener('click', (event) => {
-      if (!root.contains(event.target)) this.close();
+      if (!root.contains(/** @type {Node} */ (event.target))) this.close();
     });
 
     this.rebuildOptions();
   }
 
+  /** @returns {void} */
   rebuildOptions() {
     const options = [...this.nativeSelect.options];
     const comboboxId = this.root.dataset.combobox;
@@ -46,10 +50,10 @@ class Combobox {
             id: `${comboboxId}-option-${index}`,
             'data-index': index,
             'data-value': option.value,
-            'data-text': option.textContent.toLowerCase(),
+            'data-text': option.textContent?.toLowerCase(),
           },
           children: [
-            createElement('span', { className: 'tm-combobox__option-label', text: option.textContent }),
+            createElement('span', { className: 'tm-combobox__option-label', text: option.textContent ?? '' }),
             createElement('img', {
               className: 'tm-combobox__check',
               attrs: { src: '/assets/icons/check.svg', alt: '' },
@@ -70,24 +74,28 @@ class Combobox {
     this.syncSelectedDisplay();
   }
 
+  /** @returns {HTMLElement[]} */
   getOptionItems() {
-    return [...this.list.querySelectorAll('.tm-combobox__option')];
+    return /** @type {HTMLElement[]} */ ([...this.list.querySelectorAll('.tm-combobox__option')]);
   }
 
+  /** @returns {HTMLElement[]} */
   getVisibleOptionItems() {
     return this.getOptionItems().filter((item) => !item.hidden);
   }
 
+  /** @returns {void} */
   filterOptions() {
     const query = this.searchInput.value.trim().toLowerCase();
     const items = this.getOptionItems();
     items.forEach((item) => {
-      item.hidden = query !== '' && !item.dataset.text.includes(query);
+      item.hidden = query !== '' && !item.dataset.text?.includes(query);
     });
-    this.emptyItem.hidden = this.getVisibleOptionItems().length > 0;
+    if (this.emptyItem) this.emptyItem.hidden = this.getVisibleOptionItems().length > 0;
     this.setActive(this.getVisibleOptionItems().length > 0 ? 0 : -1);
   }
 
+  /** @returns {void} */
   syncSelectedDisplay() {
     const selectedOption = this.nativeSelect.selectedOptions[0];
     const hasValue = Boolean(selectedOption && selectedOption.value !== '');
@@ -95,12 +103,13 @@ class Combobox {
     this.root.classList.toggle(SELECTED_CLASS, hasValue);
 
     this.list.querySelectorAll('.tm-combobox__option').forEach((item) => {
-      const isSelected = item.dataset.value === this.nativeSelect.value;
+      const isSelected = /** @type {HTMLElement} */ (item).dataset.value === this.nativeSelect.value;
       item.classList.toggle(SELECTED_OPTION_CLASS, isSelected);
       item.setAttribute('aria-selected', String(isSelected));
     });
   }
 
+  /** @returns {void} */
   open() {
     if (this.root.classList.contains(OPEN_CLASS)) return;
     this.root.classList.add(OPEN_CLASS);
@@ -112,10 +121,11 @@ class Combobox {
 
     const selectedItem = this.list.querySelector(`.${SELECTED_OPTION_CLASS}`);
     const visibleItems = this.getVisibleOptionItems();
-    const selectedVisibleIndex = selectedItem ? visibleItems.indexOf(selectedItem) : -1;
+    const selectedVisibleIndex = selectedItem ? visibleItems.indexOf(/** @type {HTMLElement} */ (selectedItem)) : -1;
     this.setActive(selectedVisibleIndex >= 0 ? selectedVisibleIndex : 0);
   }
 
+  /** @returns {void} */
   close() {
     if (!this.root.classList.contains(OPEN_CLASS)) return;
     this.root.classList.remove(OPEN_CLASS);
@@ -124,6 +134,7 @@ class Combobox {
     this.setActive(-1);
   }
 
+  /** @returns {void} */
   toggle() {
     if (this.root.classList.contains(OPEN_CLASS)) this.close();
     else this.open();
@@ -131,6 +142,7 @@ class Combobox {
 
   // `index` is relative to the currently visible (filtered) items, since
   // that's the list a keyboard or mouse user is actually navigating.
+  /** @param {number} index @returns {void} */
   setActive(index) {
     const visibleItems = this.getVisibleOptionItems();
     this.getOptionItems().forEach((item) => item.classList.remove(ACTIVE_OPTION_CLASS));
@@ -146,6 +158,7 @@ class Combobox {
     }
   }
 
+  /** @param {number} delta @returns {void} */
   moveActive(delta) {
     const visibleItems = this.getVisibleOptionItems();
     if (visibleItems.length === 0) return;
@@ -156,6 +169,7 @@ class Combobox {
     this.setActive(next);
   }
 
+  /** @param {number} index @returns {void} */
   selectByIndex(index) {
     const option = this.nativeSelect.options[index];
     if (!option) return;
@@ -166,11 +180,13 @@ class Combobox {
     this.trigger.focus();
   }
 
+  /** @returns {void} */
   selectActive() {
     if (this.activeIndex === -1) return;
     this.selectByIndex(this.activeIndex);
   }
 
+  /** @param {KeyboardEvent} event @returns {void} */
   handleTriggerKeydown(event) {
     if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
       event.preventDefault();
@@ -178,6 +194,7 @@ class Combobox {
     }
   }
 
+  /** @param {KeyboardEvent} event @returns {void} */
   handleSearchKeydown(event) {
     switch (event.key) {
       case 'ArrowDown':
@@ -206,6 +223,10 @@ class Combobox {
   }
 }
 
+/**
+ * @param {HTMLElement} root
+ * @returns {Combobox}
+ */
 export function initCombobox(root) {
   return new Combobox(root);
 }

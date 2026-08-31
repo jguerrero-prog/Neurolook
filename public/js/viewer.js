@@ -1,3 +1,4 @@
+// @ts-check
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { parseSwc } from './swcParser.js';
@@ -5,6 +6,7 @@ import { parseSwc } from './swcParser.js';
 // SWC compartment type codes mapped to the standard NeuroMorpho color
 // convention: soma red, axon gray, basal dendrite green, apical dendrite
 // magenta, glia blue. Unlisted types fall back to a neutral gray.
+/** @type {Object<number, number>} */
 const COLOR_BY_TYPE = {
   1: 0xc94b4b,
   2: 0x737373,
@@ -21,6 +23,7 @@ const SOMA_TYPE = 1;
 // segments, with orbit controls for rotate/pan/zoom. One instance per
 // on-screen viewport; the detail page uses one, the compare page uses two.
 export class NeuronViewer {
+  /** @param {HTMLElement} container */
   constructor(container) {
     this.container = container;
 
@@ -43,11 +46,17 @@ export class NeuronViewer {
 
     this.animate = this.animate.bind(this);
     this.animate();
+
+    /** @type {Map<number, import('./swcParser.js').SwcSample>|undefined} */
+    this.lastSamples = undefined;
+    /** @type {THREE.Group|undefined} */
+    this.group = undefined;
   }
 
   // R/F for reset/fullscreen — only fires while this specific viewer has
   // focus, so multiple viewers on the Compare page don't fight over the
   // same keys. Interacting with the canvas (drag/click) focuses it.
+  /** @returns {void} */
   bindKeyboardShortcuts() {
     this.container.tabIndex = 0;
     this.container.addEventListener('pointerdown', () => this.container.focus());
@@ -66,6 +75,7 @@ export class NeuronViewer {
     });
   }
 
+  /** @returns {void} */
   handleResize() {
     const { clientWidth, clientHeight } = this.container;
     if (clientWidth === 0 || clientHeight === 0) return;
@@ -74,12 +84,17 @@ export class NeuronViewer {
     this.camera.updateProjectionMatrix();
   }
 
+  /** @returns {void} */
   animate() {
     requestAnimationFrame(this.animate);
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
   }
 
+  /**
+   * @param {string} swcText
+   * @returns {void}
+   */
   loadSwc(swcText) {
     if (this.group) this.scene.remove(this.group);
     this.group = new THREE.Group();
@@ -98,7 +113,12 @@ export class NeuronViewer {
     this.frameCamera(samples);
   }
 
+  /**
+   * @param {Map<number, import('./swcParser.js').SwcSample>} samples
+   * @returns {void}
+   */
   addBranchLines(samples) {
+    /** @type {Map<number, number[]>} */
     const positionsByColor = new Map();
 
     for (const sample of samples.values()) {
@@ -107,16 +127,29 @@ export class NeuronViewer {
 
       const color = COLOR_BY_TYPE[sample.type] ?? FALLBACK_COLOR;
       if (!positionsByColor.has(color)) positionsByColor.set(color, []);
-      positionsByColor.get(color).push(parent.x, parent.y, parent.z, sample.x, sample.y, sample.z);
+      /** @type {number[]} */ (positionsByColor.get(color)).push(
+        parent.x,
+        parent.y,
+        parent.z,
+        sample.x,
+        sample.y,
+        sample.z,
+      );
     }
 
     for (const [color, positions] of positionsByColor) {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      this.group.add(new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color })));
+      /** @type {THREE.Group} */ (this.group).add(
+        new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color })),
+      );
     }
   }
 
+  /**
+   * @param {Map<number, import('./swcParser.js').SwcSample>} samples
+   * @returns {void}
+   */
   addSoma(samples) {
     const soma = [...samples.values()].find((sample) => sample.type === SOMA_TYPE);
     if (!soma) return;
@@ -125,9 +158,13 @@ export class NeuronViewer {
     const material = new THREE.MeshBasicMaterial({ color: COLOR_BY_TYPE[SOMA_TYPE] });
     const somaMesh = new THREE.Mesh(geometry, material);
     somaMesh.position.set(soma.x, soma.y, soma.z);
-    this.group.add(somaMesh);
+    /** @type {THREE.Group} */ (this.group).add(somaMesh);
   }
 
+  /**
+   * @param {Map<number, import('./swcParser.js').SwcSample>} samples
+   * @returns {void}
+   */
   frameCamera(samples) {
     const box = new THREE.Box3();
     for (const sample of samples.values()) {
@@ -142,10 +179,12 @@ export class NeuronViewer {
   }
 
   // Re-frames the camera on the current morphology, undoing any rotate/pan/zoom.
+  /** @returns {void} */
   resetView() {
     if (this.lastSamples) this.frameCamera(this.lastSamples);
   }
 
+  /** @returns {void} */
   toggleFullscreen() {
     if (document.fullscreenElement === this.container) {
       document.exitFullscreen();
@@ -154,6 +193,7 @@ export class NeuronViewer {
     }
   }
 
+  /** @returns {void} */
   dispose() {
     this.resizeObserver.disconnect();
     this.renderer.dispose();

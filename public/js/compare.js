@@ -1,6 +1,7 @@
+// @ts-check
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
-import { createElement, bindCopyToClipboardButton } from './dom.js';
+import { createElement, bindCopyToClipboardButton, showError } from './dom.js';
 import { buildCompareUrl, buildNeuronDetailUrl } from './routes.js';
 import {
   ORGANISM_FIELDS,
@@ -12,18 +13,22 @@ import {
 import { buildCompareCsv } from './logic/compareExport.js';
 import { NeuronViewer } from './viewer.js';
 
+/** @typedef {import('./models/Neuron.js').Neuron} Neuron */
+
 const requestedNeuronNames = (new URLSearchParams(window.location.search).get('names') || '')
   .split(',')
   .filter(Boolean);
 
+/** @param {string} neuronName @returns {string} */
 function cssSafeId(neuronName) {
   return neuronName.replace(/[^a-zA-Z0-9_-]/g, '_');
 }
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
+/** @returns {SVGSVGElement} */
 function createFullscreenIcon() {
-  const svg = document.createElementNS(SVG_NAMESPACE, 'svg');
+  const svg = /** @type {SVGSVGElement} */ (document.createElementNS(SVG_NAMESPACE, 'svg'));
   svg.setAttribute('width', '16');
   svg.setAttribute('height', '16');
   svg.setAttribute('viewBox', '0 0 16 16');
@@ -40,12 +45,13 @@ function createFullscreenIcon() {
   return svg;
 }
 
+/** @param {Neuron} neuron @param {string[]} otherNames @returns {HTMLElement} */
 function createViewerColumn(neuron, otherNames) {
-  const safeId = cssSafeId(neuron.name);
+  const safeId = cssSafeId(/** @type {string} */ (neuron.name));
 
   const infoLink = createElement('a', {
     className: 'compare-column__info',
-    attrs: { href: buildNeuronDetailUrl(neuron.name) },
+    attrs: { href: buildNeuronDetailUrl(/** @type {string} */ (neuron.name)) },
     children: [
       createElement('div', { className: 'compare-column__id', text: neuron.name }),
       createElement('div', { className: 'compare-column__title', text: neuron.cellType || 'Neuron' }),
@@ -71,7 +77,7 @@ function createViewerColumn(neuron, otherNames) {
 
   const downloadLink = createElement('a', {
     className: 'compare-column__download',
-    attrs: { href: api.getSwcUrl(neuron.name), download: neuron.swcFilename },
+    attrs: { href: api.getSwcUrl(/** @type {string} */ (neuron.name)), download: neuron.swcFilename },
     text: 'Download SWC',
   });
 
@@ -91,28 +97,35 @@ function createViewerColumn(neuron, otherNames) {
   });
 }
 
+/** @param {Array<{neuron: Neuron, morphometry: any}>} comparisonEntries @returns {void} */
 function renderViewerColumns(comparisonEntries) {
-  const viewersGrid = document.getElementById('compare-viewers');
+  const viewersGrid = /** @type {HTMLElement} */ (document.getElementById('compare-viewers'));
   viewersGrid.replaceChildren(
     ...comparisonEntries.map(({ neuron }) => {
-      const otherNames = comparisonEntries.map((entry) => entry.neuron.name).filter((name) => name !== neuron.name);
+      const otherNames = comparisonEntries
+        .map((entry) => /** @type {string} */ (entry.neuron.name))
+        .filter((name) => name !== neuron.name);
       return createViewerColumn(neuron, otherNames);
     }),
   );
 }
 
+/** @param {Array<{neuron: Neuron, morphometry: any}>} comparisonEntries @returns {Promise<void>} */
 async function loadViewers(comparisonEntries) {
   for (const { neuron } of comparisonEntries) {
-    const viewerContainer = document.getElementById(`viewer-${cssSafeId(neuron.name)}`);
+    const viewerContainer = /** @type {HTMLElement} */ (
+      document.getElementById(`viewer-${cssSafeId(/** @type {string} */ (neuron.name))}`)
+    );
+    /** @type {NeuronViewer|null} */
     let viewer = null;
     try {
-      const swcResponse = await fetch(api.getSwcUrl(neuron.name));
+      const swcResponse = await fetch(api.getSwcUrl(/** @type {string} */ (neuron.name)));
       if (!swcResponse.ok) throw new Error('SWC file unavailable');
       viewer = new NeuronViewer(viewerContainer);
       viewer.loadSwc(await swcResponse.text());
       document
-        .getElementById(`fullscreen-${cssSafeId(neuron.name)}`)
-        .addEventListener('click', () => viewer.toggleFullscreen());
+        .getElementById(`fullscreen-${cssSafeId(/** @type {string} */ (neuron.name))}`)
+        ?.addEventListener('click', () => /** @type {NeuronViewer} */ (viewer).toggleFullscreen());
     } catch {
       // loadSwc can throw after the viewer (and its render loop) already
       // exist, e.g. on an empty/garbled file — dispose it rather than leaving
@@ -123,8 +136,9 @@ async function loadViewers(comparisonEntries) {
   }
 }
 
+/** @param {string} containerId @param {string[]} headerValues @param {import('./logic/neuronFields.js').FieldRow[]} rows @returns {void} */
 function renderComparisonTable(containerId, headerValues, rows) {
-  const table = document.getElementById(containerId);
+  const table = /** @type {HTMLElement} */ (document.getElementById(containerId));
   table.replaceChildren();
   table.appendChild(renderTableRow('Field', headerValues, { isHeader: true }));
 
@@ -133,6 +147,12 @@ function renderComparisonTable(containerId, headerValues, rows) {
   }
 }
 
+/**
+ * @param {string} label
+ * @param {any[]} values
+ * @param {{isHeader?: boolean, highlight?: boolean}} [options]
+ * @returns {HTMLElement}
+ */
 function renderTableRow(label, values, { isHeader = false, highlight = false } = {}) {
   const row = document.createElement('div');
   row.className = `compare-table__row${isHeader ? ' compare-table__row--header' : ''}`;
@@ -153,31 +173,32 @@ function renderTableRow(label, values, { isHeader = false, highlight = false } =
   return row;
 }
 
-function showError(message) {
-  const errorBanner = document.getElementById('error-banner');
-  errorBanner.textContent = message;
-  errorBanner.hidden = false;
-}
-
+/** @returns {void} */
 function bindCopyLinkButton() {
-  bindCopyToClipboardButton(document.getElementById('copy-link'), () => window.location.href);
+  bindCopyToClipboardButton(
+    /** @type {HTMLElement} */ (document.getElementById('copy-link')),
+    () => window.location.href,
+  );
 }
 
 // The plain /browse.html href is only a fallback for direct/external visits.
 // If the user actually came from Browse, going back restores their exact
 // search — filters, sort, and page — instead of resetting it.
+/** @returns {void} */
 function bindBreadcrumbBrowseLink() {
   const breadcrumbBrowseLink = document.getElementById('breadcrumb-browse-link');
-  if (!document.referrer.includes('/browse.html')) return;
+  const referrerPath = document.referrer ? new URL(document.referrer).pathname : '';
+  if (referrerPath !== '/browse.html') return;
 
-  breadcrumbBrowseLink.addEventListener('click', (event) => {
+  breadcrumbBrowseLink?.addEventListener('click', (event) => {
     event.preventDefault();
     window.history.back();
   });
 }
 
+/** @param {string[]} neuronNames @param {import('./logic/compareExport.js').CompareCsvSection[]} sections @returns {void} */
 function bindExportCsvButton(neuronNames, sections) {
-  document.getElementById('export-csv').addEventListener('click', () => {
+  document.getElementById('export-csv')?.addEventListener('click', () => {
     const csvText = buildCompareCsv(neuronNames, sections);
     const blobUrl = URL.createObjectURL(new Blob([csvText], { type: 'text/csv' }));
 
@@ -190,13 +211,14 @@ function bindExportCsvButton(neuronNames, sections) {
   });
 }
 
+/** @returns {Promise<void>} */
 async function init() {
   initCollectionBadge();
   bindCopyLinkButton();
   bindBreadcrumbBrowseLink();
 
   if (requestedNeuronNames.length < 2) {
-    document.getElementById('loading-state').hidden = true;
+    /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
     showError('Select at least two neurons to compare.');
     return;
   }
@@ -205,7 +227,7 @@ async function init() {
     const comparisonEntries = await api.compare(requestedNeuronNames);
     const neurons = comparisonEntries.map((entry) => entry.neuron);
     const morphometryRecords = comparisonEntries.map((entry) => entry.morphometry);
-    const neuronNamesRow = neurons.map((neuron) => neuron.name);
+    const neuronNamesRow = neurons.map((neuron) => /** @type {string} */ (neuron.name));
 
     const sections = [
       {
@@ -230,19 +252,20 @@ async function init() {
       },
     ];
 
-    document.getElementById('compare-heading').textContent = `Comparing ${comparisonEntries.length} neurons`;
+    /** @type {HTMLElement} */ (document.getElementById('compare-heading')).textContent =
+      `Comparing ${comparisonEntries.length} neurons`;
     renderViewerColumns(comparisonEntries);
     for (const { containerId, rows } of sections) {
       renderComparisonTable(containerId, neuronNamesRow, rows);
     }
     bindExportCsvButton(neuronNamesRow, sections);
-    document.getElementById('loading-state').hidden = true;
-    document.getElementById('compare-page').hidden = false;
+    /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
+    /** @type {HTMLElement} */ (document.getElementById('compare-page')).hidden = false;
 
     await loadViewers(comparisonEntries);
   } catch (error) {
-    document.getElementById('loading-state').hidden = true;
-    showError(`Could not load comparison: ${error.message}`);
+    /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
+    showError(`Could not load comparison: ${/** @type {Error} */ (error).message}`);
   }
 }
 

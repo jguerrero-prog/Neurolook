@@ -1,16 +1,23 @@
+// @ts-check
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
-import { createElement } from './dom.js';
+import { createElement, showError, bindRandomNeuronButton } from './dom.js';
 import { buildNeuronDetailUrl } from './routes.js';
 import { getRecentlyViewed } from './recentlyViewed.js';
 import { initCombobox } from './combobox.js';
 
+/** @returns {Promise<void>} */
 async function loadHeroSubtitle() {
   const stats = await api.getStats();
-  document.getElementById('hero-subtitle').textContent =
+  /** @type {HTMLElement} */ (document.getElementById('hero-subtitle')).textContent =
     `Search ${stats.totalNeurons.toLocaleString()} digitally reconstructed neurons`;
 }
 
+/**
+ * @param {HTMLSelectElement} selectElement
+ * @param {string[]} values
+ * @returns {void}
+ */
 function appendSelectOptions(selectElement, values) {
   for (const value of values) {
     const option = document.createElement('option');
@@ -20,8 +27,13 @@ function appendSelectOptions(selectElement, values) {
   }
 }
 
+/**
+ * @param {string} field
+ * @param {Map<string, ReturnType<typeof initCombobox>>} comboboxes
+ * @returns {Promise<void>}
+ */
 async function loadFilterSelect(field, comboboxes) {
-  const filterSelect = document.querySelector(`select[data-filter="${field}"]`);
+  const filterSelect = /** @type {HTMLSelectElement} */ (document.querySelector(`select[data-filter="${field}"]`));
 
   if (field === 'cell_type') {
     const categories = await api.getCategories(40);
@@ -37,11 +49,12 @@ async function loadFilterSelect(field, comboboxes) {
   comboboxes.get(field)?.rebuildOptions();
 }
 
+/** @returns {void} */
 function renderRecentlyViewed() {
   const recentNeurons = getRecentlyViewed();
   if (recentNeurons.length === 0) return;
 
-  const listElement = document.getElementById('recently-viewed-list');
+  const listElement = /** @type {HTMLElement} */ (document.getElementById('recently-viewed-list'));
   listElement.replaceChildren(
     ...recentNeurons.map((entry) =>
       createElement('a', {
@@ -63,41 +76,31 @@ function renderRecentlyViewed() {
       }),
     ),
   );
-  document.getElementById('recently-viewed-section').hidden = false;
+  /** @type {HTMLElement} */ (document.getElementById('recently-viewed-section')).hidden = false;
 }
 
-async function handleRandomNeuronClick() {
-  const randomButton = document.getElementById('random-neuron-button');
-  randomButton.disabled = true;
-  randomButton.textContent = 'Picking a neuron…';
-  try {
-    const { name } = await api.getRandomNeuron();
-    window.location.href = buildNeuronDetailUrl(name);
-  } catch (error) {
-    randomButton.disabled = false;
-    randomButton.textContent = 'Or try a random neuron →';
-    showError(`Could not pick a random neuron: ${error.message}`);
-  }
-}
-
-function showError(message) {
-  const errorBanner = document.getElementById('error-banner');
-  errorBanner.textContent = message;
-  errorBanner.hidden = false;
-}
-
+/** @returns {Map<string, ReturnType<typeof initCombobox>>} */
 function initFilterComboboxes() {
+  /** @type {Map<string, ReturnType<typeof initCombobox>>} */
   const comboboxes = new Map();
   document.querySelectorAll('.tm-combobox').forEach((root) => {
-    comboboxes.set(root.dataset.combobox, initCombobox(root));
+    const element = /** @type {HTMLElement} */ (root);
+    comboboxes.set(element.dataset.combobox ?? '', initCombobox(element));
   });
   return comboboxes;
 }
 
+/** @returns {Promise<void>} */
 async function init() {
   initCollectionBadge();
   renderRecentlyViewed();
-  document.getElementById('random-neuron-button').addEventListener('click', handleRandomNeuronClick);
+  bindRandomNeuronButton(
+    /** @type {HTMLButtonElement} */ (document.getElementById('random-neuron-button')),
+    async () => {
+      const { name } = await api.getRandomNeuron();
+      window.location.href = buildNeuronDetailUrl(name);
+    },
+  );
   const comboboxes = initFilterComboboxes();
 
   try {
@@ -109,7 +112,7 @@ async function init() {
       loadFilterSelect('archive', comboboxes),
     ]);
   } catch (error) {
-    showError(`Could not load data from NeuroMorpho.Org: ${error.message}`);
+    showError(`Could not load data from NeuroMorpho.Org: ${/** @type {Error} */ (error).message}`);
   }
 }
 
