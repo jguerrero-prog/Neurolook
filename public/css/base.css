@@ -310,6 +310,11 @@ a:hover {
   color: var(--color-danger);
 }
 
+.status-message--info {
+  background: var(--color-accent-tint);
+  color: var(--color-accent);
+}
+
 .loading-state {
   display: flex;
   flex-direction: column;

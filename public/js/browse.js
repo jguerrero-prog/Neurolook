@@ -4,6 +4,7 @@ import { createNeuronCard } from './neuronCard.js';
 import { ensureScope, getSelection, toggleSelection, clearSelection } from './compareSelection.js';
 import { buildCompareUrl, buildNeuronDetailUrl } from './routes.js';
 import { buildPageWindow, buildResultRangeLabel } from './logic/pagination.js';
+import { matchKnownFilterValue } from './logic/searchTermMatch.js';
 import { initCombobox } from './combobox.js';
 import { initMultiCombobox } from './multiCombobox.js';
 
@@ -11,6 +12,12 @@ let currentParams = new URLSearchParams(window.location.search);
 let facetMultiComboboxes = new Map();
 const PAGE_SIZE = 12;
 const FACET_FIELDS = ['species', 'brain_region', 'cell_type', 'archive'];
+const FACET_FIELD_LABELS = {
+  species: 'Species',
+  brain_region: 'Brain Region',
+  cell_type: 'Cell Type',
+  archive: 'Archive / Lab',
+};
 const RESULTS_VIEW_STORAGE_KEY = 'neurolook:browseResultsView';
 // Landing on Browse with no name/filters used to show a "Start browsing"
 // prompt; defaulting to this instead means there's always something to look
@@ -84,6 +91,7 @@ function applyDefaultFiltersOnFirstLoad() {
 function showNoFilterMessage() {
   document.getElementById('loading-state').hidden = true;
   document.getElementById('no-results-message').hidden = true;
+  document.getElementById('search-term-matched-message').hidden = true;
   document.getElementById('view-toggle').hidden = true;
   document.getElementById('results-grid').replaceChildren();
   document.getElementById('pagination').replaceChildren();
@@ -308,6 +316,60 @@ function bindSelectionTrayEvents() {
   document.getElementById('clear-selection').addEventListener('click', handleClearSelectionClick);
 }
 
+// Only checked against the other filterable fields, never guessed from
+// scratch — species/brain region/archive use the full known list of values,
+// cell type checks the 100 most common (there's no complete list endpoint
+// for it, since it can run into the thousands).
+async function findRescueMatch(name) {
+  const [species, brainRegion, archive, cellTypeCounts] = await Promise.all([
+    api.getFilterValues('species'),
+    api.getFilterValues('brain_region'),
+    api.getFilterValues('archive'),
+    api.getFacetCounts('cell_type', 100),
+  ]);
+  return matchKnownFilterValue(name, {
+    species: species.values,
+    brain_region: brainRegion.values,
+    archive: archive.values,
+    cell_type: cellTypeCounts.map((entry) => entry.value),
+  });
+}
+
+// A name search that truly found nothing (no other filter was already
+// narrowing it down) gets one more chance against the other fields before
+// giving up. matchedFrom/matchedField are only ever used to explain what
+// happened in renderSearchTermMatchBanner — never sent to the API itself.
+async function tryRescueZeroResultSearch(name) {
+  const match = await findRescueMatch(name).catch(() => null);
+  if (!match) return false;
+
+  const params = new URLSearchParams(currentParams);
+  params.delete('name');
+  params.set(match.field, match.value);
+  params.set('matchedFrom', name);
+  params.set('matchedField', match.field);
+  params.set('page', '0');
+  currentParams = params;
+  history.replaceState(null, '', `/browse.html?${params.toString()}`);
+  facetMultiComboboxes.get(match.field)?.selectOnly(match.value);
+  return true;
+}
+
+function renderSearchTermMatchBanner() {
+  const banner = document.getElementById('search-term-matched-message');
+  const matchedFrom = currentParams.get('matchedFrom');
+  const matchedField = currentParams.get('matchedField');
+  if (!matchedFrom || !matchedField) {
+    banner.hidden = true;
+    return;
+  }
+
+  const fieldValue = selectedValuesFor(matchedField)[0] || '';
+  const fieldLabel = FACET_FIELD_LABELS[matchedField] || matchedField;
+  banner.textContent = `No neurons are named "${matchedFrom}". Showing results for ${fieldLabel}: ${fieldValue} instead.`;
+  banner.hidden = false;
+}
+
 async function runSearch() {
   const resultsGrid = document.getElementById('results-grid');
   const loadingState = document.getElementById('loading-state');
@@ -323,8 +385,9 @@ async function runSearch() {
     loadingState.hidden = false;
   }
 
+  const nameValue = currentParams.get('name') || '';
   const { neurons, totalElements, totalPages } = await api.search({
-    name: currentParams.get('name') || '',
+    name: nameValue,
     species: currentParams.get('species') || '',
     brain_region: currentParams.get('brain_region') || '',
     cell_type: currentParams.get('cell_type') || '',
@@ -334,10 +397,16 @@ async function runSearch() {
     size: PAGE_SIZE,
   });
 
+  const isNameOnlySearch = nameValue && !FACET_FIELDS.some((field) => currentParams.get(field));
+  if (totalElements === 0 && isNameOnlySearch && (await tryRescueZeroResultSearch(nameValue))) {
+    return runSearch();
+  }
+
   loadingState.hidden = true;
   resultsGrid.classList.remove('neuron-grid--loading');
   document.getElementById('no-results-message').hidden = totalElements > 0;
   document.getElementById('view-toggle').hidden = totalElements === 0;
+  renderSearchTermMatchBanner();
 
   const selectedNames = new Set(getSelection());
   resultsGrid.replaceChildren();
