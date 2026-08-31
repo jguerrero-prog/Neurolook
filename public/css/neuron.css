@@ -210,11 +210,27 @@
   gap: 6px;
 }
 
-.tm-neuron-viewer__legend i {
+.tm-neuron-viewer__legend-dot {
   width: 9px;
   height: 9px;
   border-radius: 50%;
   display: inline-block;
+}
+
+.tm-neuron-viewer__legend-dot--soma {
+  background: var(--color-soma);
+}
+
+.tm-neuron-viewer__legend-dot--dendrite-basal {
+  background: var(--color-dendrite-basal);
+}
+
+.tm-neuron-viewer__legend-dot--dendrite-apical {
+  background: var(--color-dendrite-apical);
+}
+
+.tm-neuron-viewer__legend-dot--axon {
+  background: var(--color-axon);
 }
 
 .tm-neuron-detail__sidebar {
