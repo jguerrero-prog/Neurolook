@@ -41,12 +41,12 @@
       <form class="tm-search-form" action="/browse.html" method="get">
         <div class="tm-search-form__bar-row">
           <label for="search-name-input" class="sr-only">Search by neuron name</label>
-          <div class="tm-search-bar">
+          <div class="tm-search-bar tm-search-bar--with-button">
             <img src="/assets/icons/search.svg" alt="" width="18" height="18">
             <input id="search-name-input" name="name" type="text" class="tm-search-bar__input"
                    placeholder="Search by neuron ID, or the exact species, cell type, brain region, or archive name&hellip;">
+            <button type="submit" class="tm-search-bar__submit">Search</button>
           </div>
-          <button type="submit" class="tm-search-form__button">Search</button>
         </div>
 
         <fieldset class="tm-filters">
