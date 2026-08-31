@@ -2,7 +2,7 @@
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
 import { createNeuronCard } from './neuronCard.js';
-import { showError, bindRandomNeuronButton } from './dom.js';
+import { showError, bindRandomNeuronButton, getElement } from './dom.js';
 import { ensureScope, getSelection, toggleSelection, clearSelection } from './compareSelection.js';
 import { buildCompareUrl, buildNeuronDetailUrl } from './routes.js';
 import { buildPageWindow, buildResultRangeLabel } from './logic/pagination.js';
@@ -41,10 +41,7 @@ function getStoredResultsView() {
 
 /** @param {'list'|'grid'} view @returns {void} */
 function applyResultsView(view) {
-  /** @type {HTMLElement} */ (document.getElementById('results-grid')).classList.toggle(
-    'neuron-grid--list',
-    view === 'list',
-  );
+  getElement('results-grid').classList.toggle('neuron-grid--list', view === 'list');
   document.querySelectorAll('.tm-view-toggle__button').forEach((button) => {
     const element = /** @type {HTMLElement} */ (button);
     const isActive = element.dataset.view === view;
@@ -104,14 +101,14 @@ function applyDefaultFiltersOnFirstLoad() {
 
 /** @returns {void} */
 function showNoFilterMessage() {
-  /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
-  /** @type {HTMLElement} */ (document.getElementById('no-results-message')).hidden = true;
-  /** @type {HTMLElement} */ (document.getElementById('search-term-matched-message')).hidden = true;
-  /** @type {HTMLElement} */ (document.getElementById('view-toggle')).hidden = true;
-  /** @type {HTMLElement} */ (document.getElementById('results-grid')).replaceChildren();
-  /** @type {HTMLElement} */ (document.getElementById('pagination')).replaceChildren();
-  /** @type {HTMLElement} */ (document.getElementById('result-count')).textContent = '';
-  /** @type {HTMLElement} */ (document.getElementById('no-filter-message')).hidden = false;
+  getElement('loading-state').hidden = true;
+  getElement('no-results-message').hidden = true;
+  getElement('search-term-matched-message').hidden = true;
+  getElement('view-toggle').hidden = true;
+  getElement('results-grid').replaceChildren();
+  getElement('pagination').replaceChildren();
+  getElement('result-count').textContent = '';
+  getElement('no-filter-message').hidden = false;
 }
 
 // Re-runs the same search init() does on first load — reused after a soft
@@ -124,11 +121,11 @@ async function refreshResults() {
     showNoFilterMessage();
     return;
   }
-  /** @type {HTMLElement} */ (document.getElementById('no-filter-message')).hidden = true;
+  getElement('no-filter-message').hidden = true;
   try {
     await runSearch();
   } catch (error) {
-    /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
+    getElement('loading-state').hidden = true;
     showError(`Could not load results from NeuroMorpho.Org: ${/** @type {Error} */ (error).message}`);
   }
 }
@@ -144,8 +141,7 @@ function navigateToParams(params) {
 
 /** @returns {void} */
 function restoreFormValues() {
-  /** @type {HTMLInputElement} */ (document.getElementById('browse-name-input')).value =
-    currentParams.get('name') || '';
+  /** @type {HTMLInputElement} */ (getElement('browse-name-input')).value = currentParams.get('name') || '';
   /** @type {HTMLSelectElement} */ (document.querySelector('select[name="sort"]')).value =
     currentParams.get('sort') || '';
 }
@@ -228,7 +224,7 @@ function navigateWithCurrentFilters(browseForm) {
 
 /** @returns {void} */
 function bindBrowseFormEvents() {
-  const browseForm = /** @type {HTMLFormElement} */ (document.getElementById('browse-form'));
+  const browseForm = /** @type {HTMLFormElement} */ (getElement('browse-form'));
   browseForm.addEventListener('submit', handleFilterFormSubmit);
   browseForm.addEventListener('change', handleFilterFormChange);
 }
@@ -296,7 +292,7 @@ function appendEllipsis(paginationNav) {
 
 /** @param {number} currentPage @param {number} totalPages @returns {void} */
 function renderPaginationNav(currentPage, totalPages) {
-  const paginationNav = /** @type {HTMLElement} */ (document.getElementById('pagination'));
+  const paginationNav = getElement('pagination');
   paginationNav.replaceChildren();
 
   const { pages, hasPrevious, hasNext, showFirstPageLink, showLastPageLink } = buildPageWindow(currentPage, totalPages);
@@ -341,10 +337,9 @@ function renderPaginationNav(currentPage, totalPages) {
 function updateSelectionTray() {
   const selectedNames = getSelection();
 
-  /** @type {HTMLElement} */ (document.getElementById('selection-tray')).hidden = selectedNames.length < 2;
-  /** @type {HTMLElement} */ (document.getElementById('selection-count')).textContent =
-    `${selectedNames.length} Neurons Selected`;
-  /** @type {HTMLAnchorElement} */ (document.getElementById('compare-link')).href = buildCompareUrl(selectedNames);
+  getElement('selection-tray').hidden = selectedNames.length < 2;
+  getElement('selection-count').textContent = `${selectedNames.length} Neurons Selected`;
+  /** @type {HTMLAnchorElement} */ (getElement('compare-link')).href = buildCompareUrl(selectedNames);
 }
 
 /** @param {string} neuronName @returns {void} */
@@ -413,7 +408,7 @@ async function tryRescueZeroResultSearch(name) {
 
 /** @returns {void} */
 function renderSearchTermMatchBanner() {
-  const banner = /** @type {HTMLElement} */ (document.getElementById('search-term-matched-message'));
+  const banner = getElement('search-term-matched-message');
   const matchedFrom = currentParams.get('matchedFrom');
   const matchedField = currentParams.get('matchedField');
   if (!matchedFrom || !matchedField) {
@@ -429,8 +424,8 @@ function renderSearchTermMatchBanner() {
 
 /** @returns {Promise<void>} */
 async function runSearch() {
-  const resultsGrid = /** @type {HTMLElement} */ (document.getElementById('results-grid'));
-  const loadingState = /** @type {HTMLElement} */ (document.getElementById('loading-state'));
+  const resultsGrid = getElement('results-grid');
+  const loadingState = getElement('loading-state');
   const currentPage = Number(currentParams.get('page')) || 0;
   // Re-searching (a filter change, pagination, etc.) already has a grid full
   // of cards on screen — showing the tall loading-state block would shove
@@ -462,8 +457,8 @@ async function runSearch() {
 
   loadingState.hidden = true;
   resultsGrid.classList.remove('neuron-grid--loading');
-  /** @type {HTMLElement} */ (document.getElementById('no-results-message')).hidden = totalElements > 0;
-  /** @type {HTMLElement} */ (document.getElementById('view-toggle')).hidden = totalElements === 0;
+  getElement('no-results-message').hidden = totalElements > 0;
+  getElement('view-toggle').hidden = totalElements === 0;
   renderSearchTermMatchBanner();
 
   const selectedNames = new Set(getSelection());
@@ -477,12 +472,7 @@ async function runSearch() {
     );
   }
 
-  /** @type {HTMLElement} */ (document.getElementById('result-count')).textContent = buildResultRangeLabel(
-    currentPage,
-    PAGE_SIZE,
-    neurons.length,
-    totalElements,
-  );
+  getElement('result-count').textContent = buildResultRangeLabel(currentPage, PAGE_SIZE, neurons.length, totalElements);
   renderPaginationNav(currentPage, totalPages);
 }
 
@@ -499,19 +489,16 @@ async function init() {
   bindClearAllFiltersEvent();
   bindSelectionTrayEvents();
   bindResultsViewToggle();
-  bindRandomNeuronButton(
-    /** @type {HTMLButtonElement} */ (document.getElementById('random-neuron-button')),
-    async () => {
-      const { name } = await api.getRandomNeuron();
-      window.location.href = buildNeuronDetailUrl(name);
-    },
-  );
+  bindRandomNeuronButton(/** @type {HTMLButtonElement} */ (getElement('random-neuron-button')), async () => {
+    const { name } = await api.getRandomNeuron();
+    window.location.href = buildNeuronDetailUrl(name);
+  });
   applyResultsView(getStoredResultsView());
 
   try {
     await Promise.all(FACET_FIELDS.map((field) => loadFacetOptions(field, facetMultiComboboxes)));
   } catch (error) {
-    /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
+    getElement('loading-state').hidden = true;
     showError(`Could not load filters from NeuroMorpho.Org: ${/** @type {Error} */ (error).message}`);
     return;
   }

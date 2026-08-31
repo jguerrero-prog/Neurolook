@@ -1,7 +1,7 @@
 // @ts-check
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
-import { createElement, showError, bindRandomNeuronButton } from './dom.js';
+import { createElement, showError, bindRandomNeuronButton, getElement } from './dom.js';
 import { buildNeuronDetailUrl } from './routes.js';
 import { getRecentlyViewed } from './recentlyViewed.js';
 import { initCombobox } from './combobox.js';
@@ -9,7 +9,7 @@ import { initCombobox } from './combobox.js';
 /** @returns {Promise<void>} */
 async function loadHeroSubtitle() {
   const stats = await api.getStats();
-  /** @type {HTMLElement} */ (document.getElementById('hero-subtitle')).textContent =
+  getElement('hero-subtitle').textContent =
     `Search ${stats.totalNeurons.toLocaleString()} digitally reconstructed neurons`;
 }
 
@@ -54,7 +54,7 @@ function renderRecentlyViewed() {
   const recentNeurons = getRecentlyViewed();
   if (recentNeurons.length === 0) return;
 
-  const listElement = /** @type {HTMLElement} */ (document.getElementById('recently-viewed-list'));
+  const listElement = getElement('recently-viewed-list');
   listElement.replaceChildren(
     ...recentNeurons.map((entry) =>
       createElement('a', {
@@ -76,7 +76,7 @@ function renderRecentlyViewed() {
       }),
     ),
   );
-  /** @type {HTMLElement} */ (document.getElementById('recently-viewed-section')).hidden = false;
+  getElement('recently-viewed-section').hidden = false;
 }
 
 /** @returns {Map<string, ReturnType<typeof initCombobox>>} */
@@ -94,13 +94,10 @@ function initFilterComboboxes() {
 async function init() {
   initCollectionBadge();
   renderRecentlyViewed();
-  bindRandomNeuronButton(
-    /** @type {HTMLButtonElement} */ (document.getElementById('random-neuron-button')),
-    async () => {
-      const { name } = await api.getRandomNeuron();
-      window.location.href = buildNeuronDetailUrl(name);
-    },
-  );
+  bindRandomNeuronButton(/** @type {HTMLButtonElement} */ (getElement('random-neuron-button')), async () => {
+    const { name } = await api.getRandomNeuron();
+    window.location.href = buildNeuronDetailUrl(name);
+  });
   const comboboxes = initFilterComboboxes();
 
   try {

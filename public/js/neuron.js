@@ -1,7 +1,7 @@
 // @ts-check
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
-import { createElement, renderLinkifiedNote, bindCopyToClipboardButton, showError } from './dom.js';
+import { createElement, renderLinkifiedNote, bindCopyToClipboardButton, showError, getElement } from './dom.js';
 import { NeuronViewer } from './viewer.js';
 import { createNeuronCard } from './neuronCard.js';
 import { recordVisit } from './recentlyViewed.js';
@@ -31,7 +31,7 @@ let similarNeuronMatches = [];
 
 /** @param {string} listElementId @param {Array<[string, string]>} rows @returns {void} */
 function renderFieldList(listElementId, rows) {
-  const listElement = /** @type {HTMLElement} */ (document.getElementById(listElementId));
+  const listElement = getElement(listElementId);
   listElement.replaceChildren(
     ...rows.map(([label, value]) =>
       createElement('div', {
@@ -46,7 +46,7 @@ function renderFieldList(listElementId, rows) {
 // row, so this renders as its own full-width block, hidden when there is none.
 /** @param {Neuron} neuron @returns {void} */
 function renderNote(neuron) {
-  const noteElement = /** @type {HTMLElement} */ (document.getElementById('neuron-note'));
+  const noteElement = getElement('neuron-note');
   if (!neuron.note) {
     noteElement.hidden = true;
     return;
@@ -61,7 +61,7 @@ function renderNote(neuron) {
 // a pasted-in hyperlink.
 /** @param {import('./logic/citation.js').CitationSource[]} sources @returns {void} */
 function renderCitationSources(sources) {
-  const sourcesElement = /** @type {HTMLElement} */ (document.getElementById('citation-sources'));
+  const sourcesElement = getElement('citation-sources');
   if (sources.length === 0) {
     sourcesElement.hidden = true;
     return;
@@ -88,20 +88,18 @@ function renderCitationSources(sources) {
 /** @param {Neuron} neuron @returns {void} */
 function renderHeader(neuron) {
   document.title = `Neurolook — ${neuron.name}`;
-  /** @type {HTMLElement} */ (document.getElementById('breadcrumb-name')).textContent = /** @type {string} */ (
-    neuron.name
-  );
-  /** @type {HTMLElement} */ (document.getElementById('neuron-title')).textContent =
-    `${neuron.name} — ${neuron.cellType || 'Neuron'}`;
-  /** @type {HTMLElement} */ (document.getElementById('neuron-subtitle')).textContent = neuron.subtitle;
+  const breadcrumbName = getElement('breadcrumb-name');
+  breadcrumbName.textContent = neuron.name ?? '';
+  getElement('neuron-title').textContent = `${neuron.name} — ${neuron.cellType || 'Neuron'}`;
+  getElement('neuron-subtitle').textContent = neuron.subtitle;
 }
 
 /** @param {Neuron} neuron @returns {void} */
 function renderDownloadLinks(neuron) {
-  const downloadLink = /** @type {HTMLAnchorElement} */ (document.getElementById('download-swc'));
+  const downloadLink = /** @type {HTMLAnchorElement} */ (getElement('download-swc'));
   downloadLink.href = api.getSwcUrl(/** @type {string} */ (neuron.name));
   downloadLink.download = neuron.swcFilename;
-  /** @type {HTMLAnchorElement} */ (document.getElementById('external-link')).href = neuron.neuroMorphoPageUrl;
+  /** @type {HTMLAnchorElement} */ (getElement('external-link')).href = neuron.neuroMorphoPageUrl;
 }
 
 // The plain /browse.html href is only a fallback for direct/external visits.
@@ -121,10 +119,7 @@ function bindBreadcrumbBrowseLink() {
 
 /** @returns {void} */
 function bindCopyLinkButton() {
-  bindCopyToClipboardButton(
-    /** @type {HTMLElement} */ (document.getElementById('copy-link')),
-    () => window.location.href,
-  );
+  bindCopyToClipboardButton(getElement('copy-link'), () => window.location.href);
 }
 
 /** @param {HTMLElement} collectionToggleButton @param {boolean} isInCollection @returns {void} */
@@ -163,7 +158,7 @@ async function handleCollectionToggleClick(neuron, collectionToggleButton, isInC
 
 /** @param {Neuron} neuron @returns {Promise<void>} */
 async function bindCollectionToggle(neuron) {
-  const collectionToggleButton = /** @type {HTMLButtonElement} */ (document.getElementById('collection-toggle'));
+  const collectionToggleButton = /** @type {HTMLButtonElement} */ (getElement('collection-toggle'));
   const collectionEntries = await api.getCollection();
   let isInCollection = collectionEntries.some((entry) => entry.neuron.name === neuron.name);
   renderCollectionToggleButton(collectionToggleButton, isInCollection);
@@ -177,8 +172,8 @@ async function bindCollectionToggle(neuron) {
 /** @returns {void} */
 function bindCopyCitationButton() {
   bindCopyToClipboardButton(
-    /** @type {HTMLElement} */ (document.getElementById('copy-citation')),
-    () => /** @type {HTMLElement} */ (document.getElementById('citation-text')).textContent ?? '',
+    getElement('copy-citation'),
+    () => getElement('citation-text').textContent ?? '',
     () => [
       createElement('img', { attrs: { src: '/assets/icons/check.svg', alt: '', width: 14, height: 10 } }),
       document.createTextNode('Copied!'),
@@ -188,7 +183,7 @@ function bindCopyCitationButton() {
 
 /** @param {string} neuronName @returns {Promise<NeuronViewer|null>} */
 async function loadMorphologyViewer(neuronName) {
-  const viewerStatus = /** @type {HTMLElement} */ (document.getElementById('viewer-status'));
+  const viewerStatus = getElement('viewer-status');
   /** @type {NeuronViewer|null} */
   let viewer = null;
   try {
@@ -196,7 +191,7 @@ async function loadMorphologyViewer(neuronName) {
     if (!swcResponse.ok) throw new Error('SWC file unavailable');
     const swcText = await swcResponse.text();
 
-    viewer = new NeuronViewer(/** @type {HTMLElement} */ (document.getElementById('viewer-container')));
+    viewer = new NeuronViewer(getElement('viewer-container'));
     viewer.loadSwc(swcText);
     viewerStatus.remove();
     return viewer;
@@ -222,7 +217,7 @@ function bindViewerToolbar(viewer) {
   resetButton?.addEventListener('click', () => viewer.resetView());
   fullscreenButton?.addEventListener('click', () => viewer.toggleFullscreen());
 
-  /** @type {HTMLElement} */ (document.getElementById('viewer-toolbar')).hidden = false;
+  getElement('viewer-toolbar').hidden = false;
 }
 
 // Comparing only makes sense against the neuron currently on screen, so
@@ -243,10 +238,9 @@ function otherSelectedNames(neuron) {
 function updateSelectionTray(neuron) {
   const others = otherSelectedNames(neuron);
 
-  /** @type {HTMLElement} */ (document.getElementById('selection-tray')).hidden = others.length === 0;
-  /** @type {HTMLElement} */ (document.getElementById('selection-count')).textContent =
-    `${others.length} Neurons Selected`;
-  /** @type {HTMLAnchorElement} */ (document.getElementById('compare-link')).href = buildCompareUrl([
+  getElement('selection-tray').hidden = others.length === 0;
+  getElement('selection-count').textContent = `${others.length} Neurons Selected`;
+  /** @type {HTMLAnchorElement} */ (getElement('compare-link')).href = buildCompareUrl([
     /** @type {string} */ (neuron.name),
     ...others,
   ]);
@@ -296,7 +290,7 @@ function renderSimilarNeurons(neuron, matches) {
   if (matches.length === 0) return;
 
   const selectedNames = new Set(getSelection());
-  const grid = /** @type {HTMLElement} */ (document.getElementById('similar-neurons-grid'));
+  const grid = getElement('similar-neurons-grid');
   grid.replaceChildren(
     ...matches.map(({ neuron: similarNeuron, similarity }) =>
       createNeuronCard(similarNeuron, {
@@ -306,7 +300,7 @@ function renderSimilarNeurons(neuron, matches) {
       }),
     ),
   );
-  /** @type {HTMLElement} */ (document.getElementById('similar-neurons-section')).hidden = false;
+  getElement('similar-neurons-section').hidden = false;
 }
 
 /** @returns {Promise<void>} */
@@ -334,10 +328,10 @@ async function init() {
     renderFieldList('experimental-list', buildFieldRows(neuron, EXPERIMENTAL_FIELDS));
     renderFieldList('morphometry-list', buildMorphometryRows(morphometry));
     const citation = buildCitationLines(neuron, literature);
-    /** @type {HTMLElement} */ (document.getElementById('citation-text')).textContent = citation.lines.join(' ');
+    getElement('citation-text').textContent = citation.lines.join(' ');
     renderCitationSources(citation.sources);
     renderDownloadLinks(neuron);
-    /** @type {HTMLElement} */ (document.getElementById('neuron-detail')).hidden = false;
+    getElement('neuron-detail').hidden = false;
     recordVisit(neuron);
 
     bindSelectionTrayEvents(neuron);
@@ -349,7 +343,16 @@ async function init() {
     try {
       await bindCollectionToggle(neuron);
     } catch (error) {
+      // bindCollectionToggle never got to set the button's real label or
+      // attach its click listener, so left alone it would sit there looking
+      // clickable while silently doing nothing. Disabling it with its own
+      // message matches how the viewer and similar-neurons section each
+      // show their own failure locally, instead of a page-wide banner for
+      // what is a small, non-blocking feature.
       console.error('Could not load collection status:', error);
+      const collectionToggleButton = /** @type {HTMLButtonElement} */ (getElement('collection-toggle'));
+      collectionToggleButton.disabled = true;
+      collectionToggleButton.textContent = 'Collection unavailable';
     }
     loadMorphologyViewer(/** @type {string} */ (neuron.name)).then((viewer) => {
       if (viewer) bindViewerToolbar(viewer);
@@ -358,7 +361,7 @@ async function init() {
   } catch (error) {
     showError(`Could not load ${requestedNeuronName}: ${/** @type {Error} */ (error).message}`);
   } finally {
-    /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
+    getElement('loading-state').hidden = true;
   }
 }
 

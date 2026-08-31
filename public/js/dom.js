@@ -1,5 +1,22 @@
 // @ts-check
 
+// document.getElementById can return null, so every call site needs to
+// either check for that or assert it away. This throws a clear error
+// naming the missing id instead of leaving that null to fail later as a
+// vague "Cannot set properties of null" somewhere else. It still asserts
+// that the id resolves to an HTMLElement rather than checking it, the same
+// as the inline casts it replaces, so a real HTML/JS mismatch still only
+// shows up at runtime, not before.
+/**
+ * @param {string} id
+ * @returns {HTMLElement}
+ */
+export function getElement(id) {
+  const element = document.getElementById(id);
+  if (!element) throw new Error(`Expected an element with id "${id}" to exist.`);
+  return element;
+}
+
 // Several NeuroMorpho fields (brain_region, cell_type) are arrays of tags
 // rather than a single string; this renders either shape as one readable line.
 /**
@@ -110,6 +127,16 @@ export function bindRandomNeuronButton(button, pickRandomNeuron) {
       button.textContent = originalLabel;
       showError(`Could not pick a random neuron: ${/** @type {Error} */ (error).message}`);
     }
+  });
+
+  // A successful pick navigates away, so the button never gets a chance to
+  // reset itself on that path. If a bfcache restore later brings this exact
+  // page back (for example, pressing Back), it would otherwise stay frozen
+  // disabled with "Picking a neuron..." forever, with nothing to fix it.
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    button.disabled = false;
+    button.textContent = originalLabel;
   });
 }
 

@@ -1,7 +1,7 @@
 // @ts-check
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
-import { createElement, bindCopyToClipboardButton, showError } from './dom.js';
+import { createElement, bindCopyToClipboardButton, showError, getElement } from './dom.js';
 import { buildCompareUrl, buildNeuronDetailUrl } from './routes.js';
 import {
   ORGANISM_FIELDS,
@@ -99,7 +99,7 @@ function createViewerColumn(neuron, otherNames) {
 
 /** @param {Array<{neuron: Neuron, morphometry: any}>} comparisonEntries @returns {void} */
 function renderViewerColumns(comparisonEntries) {
-  const viewersGrid = /** @type {HTMLElement} */ (document.getElementById('compare-viewers'));
+  const viewersGrid = getElement('compare-viewers');
   viewersGrid.replaceChildren(
     ...comparisonEntries.map(({ neuron }) => {
       const otherNames = comparisonEntries
@@ -113,9 +113,7 @@ function renderViewerColumns(comparisonEntries) {
 /** @param {Array<{neuron: Neuron, morphometry: any}>} comparisonEntries @returns {Promise<void>} */
 async function loadViewers(comparisonEntries) {
   for (const { neuron } of comparisonEntries) {
-    const viewerContainer = /** @type {HTMLElement} */ (
-      document.getElementById(`viewer-${cssSafeId(/** @type {string} */ (neuron.name))}`)
-    );
+    const viewerContainer = getElement(`viewer-${cssSafeId(/** @type {string} */ (neuron.name))}`);
     /** @type {NeuronViewer|null} */
     let viewer = null;
     try {
@@ -138,7 +136,7 @@ async function loadViewers(comparisonEntries) {
 
 /** @param {string} containerId @param {string[]} headerValues @param {import('./logic/neuronFields.js').FieldRow[]} rows @returns {void} */
 function renderComparisonTable(containerId, headerValues, rows) {
-  const table = /** @type {HTMLElement} */ (document.getElementById(containerId));
+  const table = getElement(containerId);
   table.replaceChildren();
   table.appendChild(renderTableRow('Field', headerValues, { isHeader: true }));
 
@@ -175,10 +173,7 @@ function renderTableRow(label, values, { isHeader = false, highlight = false } =
 
 /** @returns {void} */
 function bindCopyLinkButton() {
-  bindCopyToClipboardButton(
-    /** @type {HTMLElement} */ (document.getElementById('copy-link')),
-    () => window.location.href,
-  );
+  bindCopyToClipboardButton(getElement('copy-link'), () => window.location.href);
 }
 
 // The plain /browse.html href is only a fallback for direct/external visits.
@@ -218,7 +213,7 @@ async function init() {
   bindBreadcrumbBrowseLink();
 
   if (requestedNeuronNames.length < 2) {
-    /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
+    getElement('loading-state').hidden = true;
     showError('Select at least two neurons to compare.');
     return;
   }
@@ -252,19 +247,18 @@ async function init() {
       },
     ];
 
-    /** @type {HTMLElement} */ (document.getElementById('compare-heading')).textContent =
-      `Comparing ${comparisonEntries.length} neurons`;
+    getElement('compare-heading').textContent = `Comparing ${comparisonEntries.length} neurons`;
     renderViewerColumns(comparisonEntries);
     for (const { containerId, rows } of sections) {
       renderComparisonTable(containerId, neuronNamesRow, rows);
     }
     bindExportCsvButton(neuronNamesRow, sections);
-    /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
-    /** @type {HTMLElement} */ (document.getElementById('compare-page')).hidden = false;
+    getElement('loading-state').hidden = true;
+    getElement('compare-page').hidden = false;
 
     await loadViewers(comparisonEntries);
   } catch (error) {
-    /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
+    getElement('loading-state').hidden = true;
     showError(`Could not load comparison: ${/** @type {Error} */ (error).message}`);
   }
 }

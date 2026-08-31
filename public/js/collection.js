@@ -2,7 +2,7 @@
 import { api } from './api.js';
 import { initCollectionBadge } from './header.js';
 import { createNeuronCard } from './neuronCard.js';
-import { showError } from './dom.js';
+import { showError, getElement } from './dom.js';
 import { ensureScope, getSelection, toggleSelection, clearSelection } from './compareSelection.js';
 import { buildCompareUrl } from './routes.js';
 import { summarizeCollection } from './logic/collectionSummary.js';
@@ -19,16 +19,15 @@ let collectionEntries = [];
 function updateSelectionTray() {
   const selectedNames = getSelection();
 
-  /** @type {HTMLElement} */ (document.getElementById('selection-tray')).hidden = selectedNames.length < 2;
-  /** @type {HTMLElement} */ (document.getElementById('selection-count')).textContent =
-    `${selectedNames.length} Neurons Selected`;
-  /** @type {HTMLAnchorElement} */ (document.getElementById('compare-link')).href = buildCompareUrl(selectedNames);
+  getElement('selection-tray').hidden = selectedNames.length < 2;
+  getElement('selection-count').textContent = `${selectedNames.length} Neurons Selected`;
+  /** @type {HTMLAnchorElement} */ (getElement('compare-link')).href = buildCompareUrl(selectedNames);
 }
 
 /** @returns {void} */
 function renderCollectionGrid() {
-  const collectionGrid = /** @type {HTMLElement} */ (document.getElementById('collection-grid'));
-  const emptyMessage = /** @type {HTMLElement} */ (document.getElementById('empty-message'));
+  const collectionGrid = getElement('collection-grid');
+  const emptyMessage = getElement('empty-message');
   const selectedNames = new Set(getSelection());
 
   collectionGrid.replaceChildren();
@@ -44,8 +43,7 @@ function renderCollectionGrid() {
     );
   }
 
-  /** @type {HTMLElement} */ (document.getElementById('collection-summary')).textContent =
-    summarizeCollection(collectionEntries).summaryText;
+  getElement('collection-summary').textContent = summarizeCollection(collectionEntries).summaryText;
 }
 
 /** @param {string} neuronName @returns {void} */
@@ -64,7 +62,7 @@ async function handleRemoveCardClick(neuronName) {
 
 /** @returns {Promise<void>} */
 async function handleRemoveSelectedClick() {
-  const removeSelectedButton = /** @type {HTMLButtonElement} */ (document.getElementById('remove-selected'));
+  const removeSelectedButton = /** @type {HTMLButtonElement} */ (getElement('remove-selected'));
   const selectedNames = getSelection();
 
   removeSelectedButton.disabled = true;
@@ -112,7 +110,7 @@ async function init() {
   } catch (error) {
     showError(`Could not load your collection: ${/** @type {Error} */ (error).message}`);
   } finally {
-    /** @type {HTMLElement} */ (document.getElementById('loading-state')).hidden = true;
+    getElement('loading-state').hidden = true;
   }
 }
 
