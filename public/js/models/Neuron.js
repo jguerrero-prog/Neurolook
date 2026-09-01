@@ -171,9 +171,14 @@ export class Neuron {
     return this.scientificName ? `${this.species} (${this.scientificName})` : this.species;
   }
 
+  // Brain region can itself be a comma-joined list of several tags (see
+  // joinField), so it goes in parentheses here rather than being joined
+  // with the same dot used between species and archive. Otherwise a comma
+  // list sitting between two dots reads as one long, confusing line.
   /** @returns {string} Species, brain region, and archive joined into one short line, skipping any that are missing. */
   get subtitle() {
-    return [this.species, this.brainRegion, this.archive].filter(Boolean).join(' · ');
+    const brainRegion = this.brainRegion ? `(${this.brainRegion})` : '';
+    return [this.species, brainRegion, this.archive].filter(Boolean).join(' · ');
   }
 
   /** @returns {string} The file name NeuroMorpho uses for this neuron's standardized SWC download. */
