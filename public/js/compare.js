@@ -88,8 +88,16 @@ function createViewerColumn(neuron, otherNames) {
       createElement('div', {
         className: 'compare-column__viewer-wrap',
         children: [
-          createElement('div', { className: 'compare-column__viewer', attrs: { id: `viewer-${safeId}` } }),
-          fullscreenButton,
+          // The fullscreen button lives inside the viewer div itself, not
+          // next to it. Fullscreening the page only keeps whatever is
+          // inside the fullscreened element on screen, so a button outside
+          // it would disappear the moment fullscreen starts, leaving no
+          // visible way to exit besides the keyboard Escape key.
+          createElement('div', {
+            className: 'compare-column__viewer',
+            attrs: { id: `viewer-${safeId}` },
+            children: [fullscreenButton],
+          }),
         ],
       }),
       downloadLink,
